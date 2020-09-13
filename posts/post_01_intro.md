@@ -45,4 +45,4 @@ mix of Democrats and Republicans, which cancel each other out at the polls.
 ![Swing Margins](../figures/popvote_swing_margin.png)
 
 
-swing over time vs. closeness (/competitiveness / polarization): are they the same states?
+swing over time vs. closeness (/competitiveness /polarization): are they the same states?
