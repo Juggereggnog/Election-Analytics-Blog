@@ -92,5 +92,3 @@ North Dakota, Texas, West Virginia
 - ~~Which states still swing like a couple in the 1930s?~~
 - Please ignore the 1948 swing map; it is off doing its own thing (2016 data
 from one state rolled over to give a value to 1948 of the next state).
-
-swing over time vs. closeness (/competitiveness /polarization): are they the same states?
