@@ -8,6 +8,13 @@ voting trends at a holistic level. Looking at elections from 1948 to 2012, we
 can see a few immediate trends.
 
 
+# Win Margins in U.S. Elections 1948-2016
+![Image](figures/popvote_win_margin.png)
+
+
+
+
+
 So what exactly are "swing states"?
 
 
