@@ -41,4 +41,3 @@ plot_usmap(data = popvote_state, regions = "states", values = "swing_margin") +
   facet_wrap(. ~ year)
 
 ggsave("popvote_swing_margin.png", path = "figures", height = 4, width = 8)
-
