@@ -90,6 +90,26 @@ ggplot(pvsl_q2_q3, aes(x = q2_q3_unem_chng, y = state_pv2p, color = party)) +
 
 ggsave("popvote_state_local_unem.png", path = "figures", height = 4, width = 8)
 
+
+lm_local_econ <- lm(state_pv2p ~ q2_q3_unem_chng, data = pvsl_q2_q3)
+summary(lm_local_econ)
+
+
+local_outsamp_mod <- lm(state_pv2p ~ q2_q3_unem_chng, pvsl_q2_q3[pvsl_q2_q3$year != 2016,])
+local_outsamp_pred <- predict(local_outsamp_mod, pvsl_q2_q3[pvsl_q2_q3$year == 2016,])
+local_outsamp_true <- pvsl_q2_q3$state_pv2p[pvsl_q2_q3$year == 2016]
+local_outsamp_pred - local_outsamp_true
+
+
+local_q2_q3_unem_chng_new <- local_q2_q3 %>%
+  subset(Year == 2020) %>%
+  select(q2_q3_unem_chng)
+
+
+predict(lm_local_econ, local_q2_q3_unem_chng_new)
+predict(lm_local_econ, local_q2_q3_unem_chng_new, interval = "prediction")
+
+
 ############################## NATIONAL ########################################
 
 
@@ -144,3 +164,26 @@ ggplot(pvn, aes(x = q2_q3_unem_chng, y = pv2p, color = party)) +
   facet_wrap(~ party)
 
 ggsave("popvote_state_nat_unem.png", path = "figures", height = 4, width = 8)
+
+
+lm_nat_econ <- lm(pv2p ~ q2_q3_unem_chng, data = pvn)
+summary(lm_nat_econ)
+
+
+nat_outsamp_mod <- lm(pv2p ~ q2_q3_unem_chng, pvn[pvn$year != 2016,])
+nat_outsamp_pred <- predict(nat_outsamp_mod, pvn[pvn$year == 2016,])
+nat_outsamp_true <- pvn$pv2p[pvn$year == 2016]
+nat_outsamp_pred - nat_outsamp_true
+
+
+nat_econ_q2_q3 <- nat_econ_q2_q3 %>% 
+  mutate(q2_q3_unem_chng = if_else(year == 2020, 9.4, q2_q3_unem_chng))
+
+
+nat_q2_q3_unem_chng_new <- nat_econ_q2_q3 %>%
+  subset(year == 2020) %>%
+  select(q2_q3_unem_chng)
+
+
+predict(lm_nat_econ, nat_q2_q3_unem_chng_new)
+predict(lm_nat_econ, nat_q2_q3_unem_chng_new, interval = "prediction")

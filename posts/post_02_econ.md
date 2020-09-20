@@ -23,9 +23,16 @@ gauge of the world around them?
 
 Meow
 
+![Local Unemployment](../figures/popvote_win_margin.png)
 
 
-## The Economy's Predictive Power Over Time
+
+## National Unemployment
+
+
+Meow
+
+![National Unemployment](../figures/popvote_win_margin.png)
 
 
 
