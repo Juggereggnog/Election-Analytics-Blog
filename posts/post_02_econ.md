@@ -32,19 +32,33 @@ as people are more likely to view changes over holistic levels.
 
 ### Incumbent Party State Vote Vs. Rate Change in Unemployment 1976 - 2016
 
-![Local Unemployment](../figures/popvote_state_local.png)
+![Local Unemployment](../figures/popvote_state_local_unem.png)
+
+
+There is a slightly positive correlation coefficient of -0.18, but running a
+linear regression over all state two-party popular votes reveals that
+*Democratic incumbent presidents have historically taken more blame for changes*
+*in the unemployment rate than Republican incumbent presidents.* 
 
 
 
 ## National Unemployment
 
 
-Meow
+Things get interesting when comparing this to national aggregate changes
+in unemployment.
 
 
 ### Incumbent Party National Vote Vs. Rate Change in Unemployment 1976 - 2016
 
-![National Unemployment](../figures/popvote_win_margin.png)
+![National Unemployment](../figures/popvote_state_nat_unem.png)
+
+
+The data, at least ostensibly, support my initial hypothesis of voters being
+less sociotropic than may be given credit to the "fully rational voter," as the
+local unemployment data has a t-value nearly double that of the national
+aggregation (111 compared to 65 for the intercepts). Additionally, the local
+data has a multiple R-squared value of 0.03.
 
 
 
@@ -54,12 +68,7 @@ Meow
 Following from the increased predictive power of the local data, I plugged in
 the delta unemployment change from Q1 to Q2 (as Q3 data is currently not yet
 available) into the regression and "predict" that Donald Trump will win 21.2% of
-the popular vote.
-
-
-
-(Mention Achen Bartels where they talk about voters' ability to correctly
-attribute changes in welfare with the appropriate party when talking about covid 19)
-(how time and locality affect predictive power of economy)
-
-Voters: partial, local (slightly sociotropic), direct
+the popular vote. Granted, given the volatility of the economy this year, this
+prediction most likely will not hold. But in the future, I would like to
+account for more economic variables alongside unemployment and analyze the data
+further to find a better correlation value (changes in RDI, for instance).
