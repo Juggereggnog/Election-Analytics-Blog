@@ -88,7 +88,7 @@ ggplot(pvsl_q2_q3, aes(x = q2_q3_unem_chng, y = state_pv2p, color = party)) +
   theme_bw() +
   facet_wrap(~ party)
 
-ggsave("popvote_state_local_unem.png", path = "figures", height = 4, width = 8)
+ggsave("popvote_state_local_unem.png", path = "figures", height = 6, width = 8)
 
 
 lm_local_econ <- lm(state_pv2p ~ q2_q3_unem_chng, data = pvsl_q2_q3)
@@ -163,7 +163,7 @@ ggplot(pvn, aes(x = q2_q3_unem_chng, y = pv2p, color = party)) +
   theme_bw() +
   facet_wrap(~ party)
 
-ggsave("popvote_state_nat_unem.png", path = "figures", height = 4, width = 8)
+ggsave("popvote_state_nat_unem.png", path = "figures", height = 6, width = 8)
 
 
 lm_nat_econ <- lm(pv2p ~ q2_q3_unem_chng, data = pvn)

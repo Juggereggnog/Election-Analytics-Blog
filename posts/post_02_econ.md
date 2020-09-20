@@ -21,9 +21,18 @@ gauge of the world around them?
 ## Local Unemployment
 
 
-Meow
+I will make the assumption for the following analysis that voters follow from
+partial economic information, and are slightly sociotropic, meaning that they
+most likely place emphasis on themselves and their surrounding communities.
+This informed my decision in using state (representing local) unemployment data
+in quarters 2 and 3 (representing partial) of election years from 1976 onward.
+Additionally, I looked at the _relative_ change in unemployment between quarters
+as people are more likely to view changes over holistic levels.
 
-![Local Unemployment](../figures/popvote_win_margin.png)
+
+### Incumbent Party State Vote Vs. Rate Change in Unemployment 1976 - 2016
+
+![Local Unemployment](../figures/popvote_state_local.png)
 
 
 
@@ -32,6 +41,9 @@ Meow
 
 Meow
 
+
+### Incumbent Party National Vote Vs. Rate Change in Unemployment 1976 - 2016
+
 ![National Unemployment](../figures/popvote_win_margin.png)
 
 
@@ -39,13 +51,12 @@ Meow
 ## Prediction
 
 
-Meow
+Following from the increased predictive power of the local data, I plugged in
+the delta unemployment change from Q1 to Q2 (as Q3 data is currently not yet
+available) into the regression and "predict" that Donald Trump will win 21.2% of
+the popular vote.
 
 
-
-## **_Funny Stuff_**
-
-- 
 
 (Mention Achen Bartels where they talk about voters' ability to correctly
 attribute changes in welfare with the appropriate party when talking about covid 19)
