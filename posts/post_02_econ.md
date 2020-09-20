@@ -13,7 +13,19 @@ a descriptive tool. Indeed, national economic data is the aggregation of
 hundreds of millions of economic choices, made by individuals, firms, and
 governments alike. Not only that, but it is also unclear what aspects of
 the economy voters look to when making their decision: is it their own welfare,
-society's? Is it 
+or society's? Is it bird's-eye, aggregate data and reports, or an intuitive
+gauge of the world around them?
+
+
+
+## Local Unemployment
+
+
+Meow
+
+
+
+## The Economy's Predictive Power Over Time
 
 
 
