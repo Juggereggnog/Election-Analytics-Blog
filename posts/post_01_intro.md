@@ -88,6 +88,7 @@ North Dakota, Texas, West Virginia
 
 ## **_Funny Stuff_**
 
+
 - Thank you, Dixiecrats and George Wallace, for screwing up my dataset.
 - ~~Which states still swing like a couple in the 1930s?~~
 - Please ignore the 1948 swing map; it is off doing its own thing (2016 data
