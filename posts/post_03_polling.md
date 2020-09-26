@@ -12,7 +12,7 @@ Meow
 
 ### To-Do
 
-![Win Margins](../figures/popvote_win_margin.png)
+![2016 Poll Averages](../figures/poll/pollavg_2016.png)
 
 
 Meow
