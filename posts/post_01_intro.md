@@ -14,7 +14,7 @@ can see a couple of immediate trends.
 
 ### Presidential Two-Party Popular Vote Shares in U.S. Elections 1948-2016
 
-![Win Margins](../figures/popvote_win_margin.png)
+![Win Margins](../figures/intro/popvote_win_margin.png)
 
 
 - **No state is immune to change.** Whether it is due to various migration
@@ -46,7 +46,7 @@ to another graph.
 
 ### Percent Change in Vote Shares between U.S. Elections 1952-2016
 
-![Swing Margins](../figures/popvote_swing_margin.png)
+![Swing Margins](../figures/intro/popvote_swing_margin.png)
 
 
 In a sense, one could consider this graph, which measures the _change_ in how a

@@ -32,7 +32,7 @@ as people are more likely to view changes over holistic levels.
 
 ### Incumbent Party State Vote Vs. Rate Change in Unemployment 1976 - 2016
 
-![Local Unemployment](../figures/popvote_state_local_unem.png)
+![Local Unemployment](../figures/econ/popvote_state_local_unem.png)
 
 
 There is a slightly positive correlation coefficient of -0.18, but running a
@@ -51,7 +51,7 @@ in unemployment.
 
 ### Incumbent Party National Vote Vs. Rate Change in Unemployment 1976 - 2016
 
-![National Unemployment](../figures/popvote_state_nat_unem.png)
+![National Unemployment](../figures/econ/popvote_state_nat_unem.png)
 
 
 The data, at least ostensibly, support my initial hypothesis of voters being
