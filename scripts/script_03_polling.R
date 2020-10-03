@@ -2,7 +2,6 @@
 library(tidyverse) # For bread-and-butter functions
 
 
-
 # Reading in necessary data files
 popvote <- read_csv("data/poll/popvote_1948-2016.csv")
 
