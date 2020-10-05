@@ -5,10 +5,9 @@ library(lubridate) # For date-time functions
 
 # Reading in necessary data files
 popvote <- read_csv("data/incumbency/popvote_1948-2016.csv")
-popvote_state <- read_csv("data/incumbency/popvote_bystate_1948-2016.csv")
 econ <- read_csv("data/incumbency/econ.csv")
 incumb_app <- read_csv("data/incumbency/approval_gallup_1941-2020.csv")
-pollstate <- read_csv("data/incumbency/pollavg_bystate_1968-2016.csv")
+pollavg <- read_csv("data/incumbency/pollavg_1968-2016.csv")
 
 
 # Making a dummy table for the two election years that didn't have June polls
