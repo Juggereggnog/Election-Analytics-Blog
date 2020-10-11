@@ -20,6 +20,8 @@ campaign.
 ![2008 Ad Issues by Party](../figures/air_war/geo_simulations.png)
 
 - **Ads play along issues salient along the party line.**
+- **Obama focused more on contrast ads than attacking McCain**
+- **Obama's team trounced the McCain campaign on total ad spending.**
 
 
 ## Prediction
