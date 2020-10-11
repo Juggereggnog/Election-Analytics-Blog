@@ -4,17 +4,10 @@ library(geofacet) # For faceting, but, map shaped
 
 ad_campaigns <- read_csv("data/air_war/ad_campaigns_2000-2012.csv")
 ad_creative <- read_csv("data/air_war/ad_creative_2000-2012.csv")
-ads_2020 <- read_csv("data/air_war/ads_2020.csv")
-pollavg <- read_csv("data/air_war/pollavg_1968-2016.csv")
 pollstate <- read_csv("data/air_war/pollavg_bystate_1968-2016.csv")
-polls_2016 <- read_csv("data/air_war/polls_2016.csv")
 polls_2020 <- read_csv("data/air_war/polls_2020.csv")
-pv <- read_csv("data/air_war/popvote_1948-2016.csv")
 pvstate <- read_csv("data/air_war/popvote_bystate_1948-2016.csv")
 vep <- read_csv("data/air_war/vep_1980-2016.csv")
-
-ads <- ad_campaigns %>% 
-  left_join(ad_creative, by = c("creative", "party", "cycle"))
 
 poll_pvstate <- pvstate %>% 
   inner_join(pollstate %>% 
@@ -51,28 +44,12 @@ ggplot(party_issues2008, aes(x = reorder(ad_issue, Dp_n), y = p_n, fill = party)
   geom_bar(stat = "identity") +
   scale_fill_manual(values = c("#00BFC4", "#F8766D")) +
   labs(x = "Issue",
-       y = "% of ads on topic from each party",
+       y = "Party's % of Ads",
        fill = "Party") +
   coord_flip() + 
   theme_bw()
 
-
-## Campaign Ads Aired By Issue and Party: 2012
-party_issues2012 <- ad_campaigns %>%
-  filter(cycle == 2012) %>%
-  left_join(ad_creative) %>%
-  filter(ad_issue != "None") %>%
-  group_by(cycle, ad_issue) %>% mutate(tot_n=n()) %>% ungroup() %>%
-  group_by(cycle, ad_issue, party) %>% summarise(p_n=n()*100/first(tot_n)) %>% ungroup() %>%
-  group_by(cycle, ad_issue) %>% mutate(Dp_n = ifelse(first(party) == "democrat", first(p_n), 0))
-
-ggplot(party_issues2012, aes(x = reorder(ad_issue, Dp_n), y = p_n, fill = party)) + 
-  geom_bar(stat = "identity") +
-  scale_fill_manual(values = c("blue", "red")) +
-  ylab("% of ads on topic from each party") + xlab("issue") +
-  # ggtitle("Campaign Ads Aired by Topic in 2012") +
-  coord_flip() + 
-  theme_bw()
+ggsave("ad_issues_2008.png", path = "figures/air_war", height = 6, width = 8)
 
 
 ######################## PREDICTIVE ANALYSIS ###################################
@@ -212,7 +189,7 @@ dooby %>%
        fill = "Dem Results") +
   theme_bw()
 
-ggsave("geo_simulations.png", path = "figures/air_war", height = 4, width = 8)
+ggsave("geo_simulations.png", path = "figures/air_war", height = 6, width = 10)
 
 
 
