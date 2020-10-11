@@ -17,7 +17,7 @@ campaign.
 
 ### Campaign Ads Aired By Issue and Party: 2008
 
-![2008 Ad Issues by Party](../figures/air_war/geo_simulations.png)
+![2008 Ad Issues by Party](../figures/air_war/ad_issues_2008.png)
 
 - **Ads play along issues salient along the party line.**
 - **Obama focused more on contrast ads than attacking McCain**
@@ -37,7 +37,7 @@ sticking with my polls-only model.
 
 ### 2020 Predicted Democratic State-Win Margins: 10,000 Simulations
 
-![Map of Binomial Distributions](../figures/air_war/ad_issues_2008.png)
+![Map of Binomial Distributions](../figures/air_war/geo_simulations.png)
 
 
 I used geofacet to create a map of the distributions, and colored each individual
