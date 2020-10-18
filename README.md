@@ -10,3 +10,4 @@ sections below to find predictions and analysis related to that subject.
 #### [Week 4: Incumbency](posts/post_04_incumbency.md)
 #### [Week 5: Air War](posts/post_05_air_war.md)
 #### [Week 6: Ground Game](posts/post_06_ground_game.md)
+#### [Week 7: Shocks](posts/post_07_shocks.md)
