@@ -4,16 +4,6 @@ library(lubridate)
 library(geofacet)
 
 
-pvcounty <- read_csv("data/ground_game/popvote_bycounty_2012-2016_WI.csv")
-
-fo_county <- read_csv("data/ground_game/fieldoffice_2012_bycounty.csv")
-
-fo_address <- read_csv("data/ground_game/fieldoffice_2012-2016_byaddress.csv")
-
-fo_dems <- read_csv("data/ground_game/fieldoffice_2004-2012_dems.csv")
-
-dem <- read_csv("data/ground_game/demographic_1990-2018.csv")
-
 turnout <- read_csv("data/ground_game/turnout_1980-2016.csv") %>% 
   mutate(turnout_pct = substr(turnout_pct, 1, nchar(turnout_pct) - 1),
          turnout_pct = as.double(turnout_pct),
@@ -21,7 +11,6 @@ turnout <- read_csv("data/ground_game/turnout_1980-2016.csv") %>%
   filter(!is.na(turnout_pct),
          state != "District of Columbia",
          state != "United States")
-
 
 pollstate <- read_csv("data/ground_game/pollavg_bystate_1968-2016.csv")
 
@@ -32,11 +21,12 @@ polls_2020 <- read_csv("data/ground_game/polls_2020_new.csv") %>%
   select(state, created_at, candidate_name, candidate_party, pct)
 
 pvstate <- read_csv("data/ground_game/popvote_bystate_1948-2016.csv")
+
 vep <- read_csv("data/ground_game/vep_1980-2016.csv")
 
 poll_pvstate <- pvstate %>% 
   inner_join(pollstate %>% 
-               filter(weeks_left == 3) %>% 
+               filter(weeks_left == 5) %>% # Code breaks when weeks_left == 3 for reasons unknown (more obs.)
                group_by(state, year, candidate_name) %>%
                top_n(1, poll_date)) %>% 
   mutate(D_pv = (D / total) * 100,
@@ -62,7 +52,6 @@ ggsave("turnout_overtime.png", path = "figures/ground_game", height = 4, width =
 
 ######################## PREDICTIVE ANALYSIS ###################################
 
-# Meow
 # Making (relevant) polls_2020 dataframe (polls 5 weeks out)
 pollstate_2020 <- data.frame(ID = 1:100)
 pollstate_2020$state <- state.name
@@ -254,7 +243,7 @@ for (i in 1:10000) {
 # Plotting distribution of results
 ev_dist %>% 
   ggplot(aes(x = election_result, fill = (election_result >= 270))) +
-  geom_histogram(bins = 90) +
+  geom_histogram(bins = 60) +
   theme_bw() +
   labs(x = "# Electoral College Votes",
        y = "# of Elections",
