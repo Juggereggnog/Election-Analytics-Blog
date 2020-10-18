@@ -51,7 +51,28 @@ way, which helps the model but will not fully capture the possible ramifications
 ![The Better Binomial](../figures/ground_game/better_binomial.png)
 
 
-And we have variance!
+And we have variance! In addition to the use of a binomial distribution, I have
+employed normal distributions to introduce variance at the turnout and probabilistic
+levels. Additionally, due to a lack of time, I only introduced a combined effect of
+0.9 on turnout due to COVID-19 and vote-by-mail. My reasoning for this is that
+the *cost of voting* for voters in vote-by-mail states is significantly reduced (+20%),
+and is only barely offset by COVID-19 because it hampers the *primary* method of
+voting (-30%): a 10% net loss for turnout.
+
+The distributions for each candidate look at least historically plausible, and
+are regionally realistic. This model could use many minor tweaks, but I am ecstatic
+with the results! Biden wins in this particular set of simulations with 330
+electoral votes, given the same assumptions as last week.
+
+
+Update: I realized that because my graph has variance now, I need to calculate
+Biden's electoral votes in each of the 10,000 simulations. I created a histogram
+to that end below. I'm having so much fun in this class!
+
+
+### Distribution of Electoral College Results: 10,000 Simulations
+
+![Election Results](../figures/ground_game/election_results.png)
 
 
 
