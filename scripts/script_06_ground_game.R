@@ -235,7 +235,33 @@ ggsave("better_binomial.png", path = "figures/ground_game", height = 6, width = 
 
 ################################## TESTING #####################################
 
-# Meow
+# Calculating Electoral College votes for each simulated election
+ev_dist <- data.frame()
+for (i in 1:10000) {
+  
+  
+  elec_res <- dooby %>% 
+    filter(election_id == i) %>% 
+    summarize(elec_res = sum(ev_won)) %>% 
+    pull(elec_res)
 
+  
+  ev_dist <- rbind(ev_dist,
+                   cbind(election_id = i,
+                         election_result = elec_res))
+}
 
+# Plotting distribution of results
+ev_dist %>% 
+  ggplot(aes(x = election_result, fill = (election_result >= 270))) +
+  geom_histogram(bins = 90) +
+  theme_bw() +
+  labs(x = "# Electoral College Votes",
+       y = "# of Elections",
+       fill = "Biden Wins")
 
+ggsave("election_results.png", path = "figures/ground_game", height = 4, width = 8)
+
+# Counting number of wins and losses (for intuition and proportion)
+ev_dist %>% 
+  count(election_result >= 270)
