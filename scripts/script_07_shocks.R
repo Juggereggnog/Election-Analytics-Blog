@@ -94,8 +94,9 @@ ggplot(covid_app, aes(x = created_at, y = yes, color = positiveIncrease)) +
 
 ggsave("balls_n_string.png", path = "figures/shocks", height = 4, width = 8)
 
-cor(covid_app$positive, covid_app$yes)
-cor(covid_app$death, covid_app$yes)
+cor(covid_app$positiveIncrease, covid_app$no)
+cor(covid_app$death, covid_app$no)
+cor(covid_app$totalTestResultsIncrease, covid_app$no)
 
 meow <- lm(yes ~ death + positive, data = covid_app)
 summary(meow)
@@ -179,9 +180,9 @@ meow <- lapply(s, function(s){
   normalD <- rnorm(10000, mean = prob_Dvote_s_2020, sd = pollD_sd)
   
   ## Coefficients represent net effect of COVID-19 & proliferated vote-by-mail
-  ## Republicans less wary of COVID-19 (-10%), less prone to voting by mail (+5%)
+  ## Republicans less wary of COVID-19 (-10%), less prone to voting by mail (+4.9%)
   ## Democrats more wary of COVID-19 (-30%), more prone to voting by mail (+19.6%)
-  sim_Rvotes_s_2020 <- rbinom(n = 10000, size = round(0.95 * LVP_s_2020), prob = normalR)
+  sim_Rvotes_s_2020 <- rbinom(n = 10000, size = round(0.949 * LVP_s_2020), prob = normalR)
   sim_Dvotes_s_2020 <- rbinom(n = 10000, size = round(0.896 * LVP_s_2020), prob = normalD)
   
   ## Simulating a distribution of election results: Biden win margin
