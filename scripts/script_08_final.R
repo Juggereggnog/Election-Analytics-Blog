@@ -4,7 +4,7 @@ library(lubridate)
 library(geofacet)
 
 
-turnout <- read_csv("data/ground_game/turnout_1980-2016.csv") %>% 
+turnout <- read_csv("data/final/turnout_1980-2016.csv") %>% 
   mutate(turnout_pct = substr(turnout_pct, 1, nchar(turnout_pct) - 1),
          turnout_pct = as.double(turnout_pct),
          turnout_pct = ifelse(year == 2016, round(turnout_pct * 100, 1), turnout_pct)) %>% 
@@ -12,21 +12,15 @@ turnout <- read_csv("data/ground_game/turnout_1980-2016.csv") %>%
          state != "District of Columbia",
          state != "United States")
 
-pollstate <- read_csv("data/ground_game/pollavg_bystate_1968-2016.csv")
+pollstate <- read_csv("data/final/pollavg_bystate_1968-2016.csv")
 
-polls_2020 <- read_csv("data/ground_game/polls_2020_new.csv") %>% 
-  mutate(created_at = substr(created_at, 1, nchar(created_at) - 6),
-         created_at = mdy(created_at)) %>% 
-  arrange(state, created_at) %>% 
-  select(state, created_at, candidate_name, candidate_party, pct)
+pvstate <- read_csv("data/final/popvote_bystate_1948-2016.csv")
 
-pvstate <- read_csv("data/ground_game/popvote_bystate_1948-2016.csv")
-
-vep <- read_csv("data/ground_game/vep_1980-2016.csv")
+vep <- read_csv("data/final/vep_1980-2016.csv")
 
 poll_pvstate <- pvstate %>% 
   inner_join(pollstate %>% 
-               filter(weeks_left == 5) %>% # Code breaks when weeks_left == 3 for reasons unknown (more obs.)
+               filter(weeks_left <= 5, days_left >= 3, state != "District of Columbia") %>% # Code breaks when weeks_left == 3 for reasons unknown (more obs.)
                group_by(state, year, candidate_name) %>%
                top_n(1, poll_date)) %>% 
   mutate(D_pv = (D / total) * 100,
@@ -39,8 +33,21 @@ poll_pvstate_vep <- poll_pvstate %>%
 
 ######################## DESCRIPTIVE ANALYSIS ##################################
 
-# Midterm turnout noticeably lower than turnout during election years
-Meow
+# Meow
+pollstate %>%
+  count(state, weeks_left <= 1) %>%
+  filter(state %in% state.name, `weeks_left <= 1` == TRUE)
+
+
+pollstate %>% 
+  filter(party == "republican", weeks_left == 0) %>% 
+  arrange(year, state, weeks_left) %>% 
+  group_by(year) %>% 
+  summarize(unique(state)) %>% 
+  count(year)
+
+
+
 
 
 ######################## PREDICTIVE ANALYSIS ###################################
@@ -54,22 +61,25 @@ pollstate_2020 <- pollstate_2020 %>%
   select(-ID)
 pollstate_2020$party <- c("democrat", "republican")
 ## Manually coded in FiveThirtyEight state poll avgs alphabetically (two per state)
-pollstate_2020$avg_poll <- c(40.1, 55.0, 45.2, 49.7, 48.4, 45.1, 45.1, 48.2,
-                             62.1, 30.8, 51.1, 41.1, 55.1, 34.3, 57.5, 38.0,
-                             47.9, 46.1, 46.8, 47.0, 56.7, 31.2, 34.6, 59.5,
-                             52.9, 39.8, 38.9, 53.4, 45.8, 46.6, 41.6, 50.5,
-                             38.2, 57.0, 40.4, 51.1, 54.3, 39.0, 61.0, 32.7,
-                             63.9, 29.7, 49.9, 43.0, 50.7, 42.0, 40.7, 52.5,
-                             44.0, 50.7, 42.9, 51.0, NA, NA, 48.8, 42.4,
-                             51.4, 42.8, 55.6, 36.4, 54.1, 41.4, 60.3, 33.4,
-                             47.5, 46.5, 38.0, 55.2, 48.0, 47.0, 34.5, 58.0,
-                             51.0, 39.1, 49.9, 44.5, NA, NA, 43.6, 51.1,
-                             NA, NA, 40.8, 53.2, 45.9, 47.9, 37.0, 49.5,
-                             55.6, 32.4, 51.1, 41.0, 59.1, 34.8, 33.5, 62.9,
-                             50.5, 43.8, NA, NA)
+pollstate_2020$avg_poll <- c(38.2, 57.0, 43.4, 51.0, 48.7, 45.3, 35.9, 59.1,
+                             61.4, 33.4, 54.6, 40.6, 57.4, 32.5, 58.7, 34.9,
+                             48.5, 46.6, 48.4, 46.8, 63.6, 30.7, 37.7, 57.5,
+                             55.0, 40.9, 41.8, 51.1, 45.6, 47.3, 41.7, 51.7,
+                             39.5, 55.6, 37.0, 57.4, 53.5, 39.9, 61.6, 31.9,
+                             65.9, 29.2, 51.2, 42.8, 51.2, 42.3, 39.2, 55.6,
+                             44.2, 50.9, 45.3, 50.2, 42.4, 52.4, 49.5, 44.4,
+                             53.8, 42.8, 59.6, 37.2, 53.7, 42.2, 62.8, 32.1,
+                             49.0, 46.7, 38.1, 56.6, 46.9, 47.1, 36.3, 58.9,
+                             57.9, 38.0, 49.9, 45.0, 63.4, 32.3, 43.6, 51.4,
+                             39.2, 53.8, 41.3, 54.4, 47.0, 48.4, 41.6, 52.2,
+                             65.6, 28.7, 53.2, 41.9, 58.5, 35.5, 34.0, 61.3,
+                             51.9, 43.7, 30.5, 62.6)
+
+# DC (89.8, 6.7), Nebraska (42.4, 52.4), Rhode Island (63.4, 32.3),
+# South Dakota (39.2, 53.8), Wyoming (30.5, 62.6)
 
 
-s <- unique(poll_pvstate$state)
+s <- unique(poll_pvstate_vep$state)
 
 pollR_sd <- sd(pollstate_2020 %>% 
                  filter(party == "republican", !is.na(avg_poll)) %>% 
@@ -187,17 +197,23 @@ dooby <- dooby %>%
                         state_abb == "OK" ~ 7,
                         state_abb == "OR" ~ 7,
                         state_abb == "PA" ~ 20,
+                        state_abb == "RI" ~ 4,
                         state_abb == "SC" ~ 9,
+                        state_abb == "SD" ~ 3,
                         state_abb == "TN" ~ 11,
                         state_abb == "TX" ~ 38,
                         state_abb == "UT" ~ 6,
                         state_abb == "VA" ~ 13,
+                        state_abb == "VT" ~ 3,
                         state_abb == "WA" ~ 12,
                         state_abb == "WV" ~ 5,
                         state_abb == "WI" ~ 10,
+                        state_abb == "WY" ~ 3,
                         TRUE ~ 999),
          ev_won = ifelse(state_win == "win", ev, 0),
-         ev_lost = 522 - ev_won)
+         ev_lost = ifelse(state_win == "win", 0, ev))
+
+# DC not included, but auto-awarded to Biden (+3 EV)
 
 
 dooby %>% 
@@ -233,7 +249,7 @@ for (i in 1:10000) {
 
 # Plotting distribution of results
 ev_dist %>% 
-  ggplot(aes(x = election_result, fill = (election_result >= 270))) +
+  ggplot(aes(x = election_result, fill = (election_result >= 267))) +
   geom_histogram(bins = 60) +
   theme_bw() +
   labs(x = "# Electoral College Votes",
@@ -244,4 +260,4 @@ ggsave("election_results.png", path = "figures/ground_game", height = 4, width =
 
 # Counting number of wins and losses (for intuition and proportion)
 ev_dist %>% 
-  count(election_result >= 270)
+  count(election_result >= 267)
