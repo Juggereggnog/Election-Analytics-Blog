@@ -1,4 +1,4 @@
-# Ground Game
+# Final Prediction
 
 # November 1, 2020
 
@@ -7,14 +7,26 @@
 ## The Time for Uncertainty
 
 
-The
-
-Electoral Votes: Biden **353**, Trump **185**
+I will try to keep this short and to the point.
 
 
-### Voter Turnout in Presidential U.S. Elections 1980-2016
+#### Predicted Electoral Vote share: Biden **353**, Trump **185**.
+
+
+### Average Simulated Election: State Results
 
 ![Average Election](../figures/final/avg_elxn.png)
+
+
+
+## Model Formula
+
+
+The
+
+
+
+
 ![The Better Binomial](../figures/final/better_binomial.png)
 ![Election Results](../figures/final/election_results.png)
 
@@ -23,7 +35,7 @@ Electoral Votes: Biden **353**, Trump **185**
 
 
 
-## Data
+## Data Sources
 
 
 Soubhik Barari & Sun Young Park (Gov 1347 TAs):
