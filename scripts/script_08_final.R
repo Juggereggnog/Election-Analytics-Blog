@@ -1,6 +1,6 @@
 library(tidyverse)
-library(usmap)
 library(lubridate)
+library(statebins)
 library(geofacet)
 
 
@@ -20,7 +20,7 @@ vep <- read_csv("data/final/vep_1980-2016.csv")
 
 poll_pvstate <- pvstate %>% 
   inner_join(pollstate %>% 
-               filter(weeks_left <= 5, days_left >= 3, state != "District of Columbia") %>% # Code breaks when weeks_left == 3 for reasons unknown (more obs.)
+               filter(weeks_left <= 5, days_left >= 3, state != "District of Columbia") %>%
                group_by(state, year, candidate_name) %>%
                top_n(1, poll_date)) %>% 
   mutate(D_pv = (D / total) * 100,
@@ -28,25 +28,6 @@ poll_pvstate <- pvstate %>%
 
 poll_pvstate_vep <- poll_pvstate %>% 
   inner_join(vep)
-
-
-
-######################## DESCRIPTIVE ANALYSIS ##################################
-
-# Meow
-pollstate %>%
-  count(state, weeks_left <= 1) %>%
-  filter(state %in% state.name, `weeks_left <= 1` == TRUE)
-
-
-pollstate %>% 
-  filter(party == "republican", weeks_left == 0) %>% 
-  arrange(year, state, weeks_left) %>% 
-  group_by(year) %>% 
-  summarize(unique(state)) %>% 
-  count(year)
-
-
 
 
 
@@ -130,11 +111,12 @@ meow <- lapply(s, function(s){
   normalR <- rnorm(10000, mean = prob_Rvote_s_2020, sd = pollR_sd)
   normalD <- rnorm(10000, mean = prob_Dvote_s_2020, sd = pollD_sd)
   
-  sim_Rvotes_s_2020 <- rbinom(n = 10000, size = round(LVP_s_2020 * .9), prob = normalR)
-  sim_Dvotes_s_2020 <- rbinom(n = 10000, size = round(LVP_s_2020 * .9), prob = normalD)
+  sim_Rvotes_s_2020 <- rbinom(n = 10000, size = round(LVP_s_2020), prob = normalR)
+  sim_Dvotes_s_2020 <- rbinom(n = 10000, size = round(LVP_s_2020), prob = normalD)
   
   ## Simulating a distribution of election results: Biden win margin
   sim_elxns_s_2020 <- ((sim_Dvotes_s_2020 - sim_Rvotes_s_2020) / (sim_Dvotes_s_2020 + sim_Rvotes_s_2020)) * 100
+  
   
   
   cbind.data.frame(election_id = 1:10000,
@@ -152,7 +134,7 @@ meow <- lapply(s, function(s){
 
 dooby <- do.call(rbind, meow)
 
-
+# DC not included, but auto-awarded to Biden (+3 EV)
 dooby <- dooby %>% 
   filter(!is.na(sim_elxns_s_2020)) %>% 
   mutate(state_win = case_when(sim_elxns_s_2020 > 0 ~ "win",
@@ -213,8 +195,6 @@ dooby <- dooby %>%
          ev_won = ifelse(state_win == "win", ev, 0),
          ev_lost = ifelse(state_win == "win", 0, ev))
 
-# DC not included, but auto-awarded to Biden (+3 EV)
-
 
 dooby %>% 
   ggplot(aes(x = sim_elxns_s_2020, fill = state_win)) +
@@ -225,8 +205,91 @@ dooby %>%
        fill = "Dem Results") +
   theme_bw()
 
-ggsave("better_binomial.png", path = "figures/ground_game", height = 6, width = 10)
+ggsave("better_binomial.png", path = "figures/final", height = 6, width = 10)
 
+
+# Same process but with the average win margin for each state
+dooby_avgs <- dooby %>% 
+  group_by(state) %>% 
+  summarize(avg_win_margin = mean(sim_elxns_s_2020),
+            avg_Rvotes = mean(sim_Rvotes_s_2020),
+            avg_Dvotes = mean(sim_Dvotes_s_2020),
+            ) %>% 
+  mutate(state_win = case_when(avg_win_margin > 0 ~ "win",
+                               avg_win_margin < 0 ~ "lose",
+                               TRUE ~ "tie"),
+         state_abb = state.abb[match(state, state.name)],
+         ev = case_when(state_abb == "AL" ~ 9,
+                        state_abb == "AK" ~ 3,
+                        state_abb == "AZ" ~ 11,
+                        state_abb == "AR" ~ 6,
+                        state_abb == "CA" ~ 55,
+                        state_abb == "CO" ~ 9,
+                        state_abb == "CT" ~ 7,
+                        state_abb == "DE" ~ 3,
+                        state_abb == "FL" ~ 29,
+                        state_abb == "GA" ~ 16,
+                        state_abb == "HI" ~ 4,
+                        state_abb == "ID" ~ 4,
+                        state_abb == "IL" ~ 20,
+                        state_abb == "IN" ~ 11,
+                        state_abb == "IA" ~ 6,
+                        state_abb == "KS" ~ 6,
+                        state_abb == "KY" ~ 6,
+                        state_abb == "LA" ~ 8,
+                        state_abb == "ME" ~ 4,
+                        state_abb == "MD" ~ 10,
+                        state_abb == "MA" ~ 11,
+                        state_abb == "MI" ~ 16,
+                        state_abb == "MN" ~ 16,
+                        state_abb == "MS" ~ 6,
+                        state_abb == "MO" ~ 10,
+                        state_abb == "MT" ~ 3,
+                        state_abb == "NE" ~ 5,
+                        state_abb == "NV" ~ 6,
+                        state_abb == "NH" ~ 4,
+                        state_abb == "NJ" ~ 14,
+                        state_abb == "NM" ~ 5,
+                        state_abb == "NY" ~ 29,
+                        state_abb == "NC" ~ 15,
+                        state_abb == "ND" ~ 3,
+                        state_abb == "OH" ~ 18,
+                        state_abb == "OK" ~ 7,
+                        state_abb == "OR" ~ 7,
+                        state_abb == "PA" ~ 20,
+                        state_abb == "RI" ~ 4,
+                        state_abb == "SC" ~ 9,
+                        state_abb == "SD" ~ 3,
+                        state_abb == "TN" ~ 11,
+                        state_abb == "TX" ~ 38,
+                        state_abb == "UT" ~ 6,
+                        state_abb == "VA" ~ 13,
+                        state_abb == "VT" ~ 3,
+                        state_abb == "WA" ~ 12,
+                        state_abb == "WV" ~ 5,
+                        state_abb == "WI" ~ 10,
+                        state_abb == "WY" ~ 3,
+                        TRUE ~ 999),
+         ev_won = ifelse(state_win == "win", ev, 0),
+         ev_lost = ifelse(state_win == "win", 0, ev))
+
+
+dooby_avgs %>% 
+  ggplot(aes(state = state, fill = state_win)) +
+  geom_statebins() +
+  theme_statebins() +
+  labs(fill = "Average Dem Result")
+
+ggsave("avg_elxn.png", path = "figures/final", height = 4, width = 8)
+
+
+### Bad statistics
+sum(dooby_avgs$avg_Rvotes)
+sum(dooby_avgs$avg_Dvotes)
+# 539 total ev...
+sum(dooby_avgs$ev)
+sum(dooby_avgs$ev_won)
+sum(dooby_avgs$ev_lost)
 
 
 ################################## TESTING #####################################
@@ -247,6 +310,7 @@ for (i in 1:10000) {
                          election_result = elec_res))
 }
 
+
 # Plotting distribution of results
 ev_dist %>% 
   ggplot(aes(x = election_result, fill = (election_result >= 267))) +
@@ -256,8 +320,9 @@ ev_dist %>%
        y = "# of Elections",
        fill = "Biden Wins")
 
-ggsave("election_results.png", path = "figures/ground_game", height = 4, width = 8)
+ggsave("election_results.png", path = "figures/final", height = 4, width = 8)
 
-# Counting number of wins and losses (for intuition and proportion)
+
+# Counting number of wins and losses (for intuition and proportion) (91.38% win chance)
 ev_dist %>% 
   count(election_result >= 267)
