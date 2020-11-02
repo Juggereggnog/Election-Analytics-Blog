@@ -9,10 +9,14 @@
 
 The
 
+Electoral Votes: Biden **353**, Trump **185**
+
 
 ### Voter Turnout in Presidential U.S. Elections 1980-2016
 
-![Turnout Over Time](../figures/final/.png)
+![Average Election](../figures/final/avg_elxn.png)
+![The Better Binomial](../figures/final/better_binomial.png)
+![Election Results](../figures/final/election_results.png)
 
 
 - ****
