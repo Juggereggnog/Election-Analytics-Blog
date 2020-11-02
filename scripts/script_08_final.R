@@ -280,7 +280,7 @@ dooby_avgs %>%
   theme_statebins() +
   labs(fill = "Average Dem Result")
 
-ggsave("avg_elxn.png", path = "figures/final", height = 5, width = 8)
+ggsave("avg_elxn.png", path = "figures/final", height = 6, width = 8)
 
 
 ### Bad statistics
