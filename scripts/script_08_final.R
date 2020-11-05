@@ -157,13 +157,13 @@ dooby <- dooby %>%
                         state_abb == "IN" ~ 11,
                         state_abb == "IA" ~ 6,
                         state_abb == "KS" ~ 6,
-                        state_abb == "KY" ~ 6,
+                        state_abb == "KY" ~ 8,
                         state_abb == "LA" ~ 8,
                         state_abb == "ME" ~ 4,
                         state_abb == "MD" ~ 10,
                         state_abb == "MA" ~ 11,
                         state_abb == "MI" ~ 16,
-                        state_abb == "MN" ~ 16,
+                        state_abb == "MN" ~ 10,
                         state_abb == "MS" ~ 6,
                         state_abb == "MO" ~ 10,
                         state_abb == "MT" ~ 3,
@@ -235,13 +235,13 @@ dooby_avgs <- dooby %>%
                         state_abb == "IN" ~ 11,
                         state_abb == "IA" ~ 6,
                         state_abb == "KS" ~ 6,
-                        state_abb == "KY" ~ 6,
+                        state_abb == "KY" ~ 8,
                         state_abb == "LA" ~ 8,
                         state_abb == "ME" ~ 4,
                         state_abb == "MD" ~ 10,
                         state_abb == "MA" ~ 11,
                         state_abb == "MI" ~ 16,
-                        state_abb == "MN" ~ 16,
+                        state_abb == "MN" ~ 10,
                         state_abb == "MS" ~ 6,
                         state_abb == "MO" ~ 10,
                         state_abb == "MT" ~ 3,
@@ -271,7 +271,10 @@ dooby_avgs <- dooby %>%
                         state_abb == "WY" ~ 3,
                         TRUE ~ 999),
          ev_won = ifelse(state_win == "win", ev, 0),
-         ev_lost = ifelse(state_win == "win", 0, ev))
+         ev_lost = ifelse(state_win == "win", 0, ev),
+         total_votes = avg_Rvotes + avg_Dvotes,
+         D_pv2p = avg_Dvotes / total_votes,
+         R_pv2p = avg_Rvotes / total_votes)
 
 
 dooby_avgs %>% 
@@ -283,32 +286,29 @@ dooby_avgs %>%
 ggsave("avg_elxn.png", path = "figures/final", height = 6, width = 8)
 
 
-### Bad statistics
+### Category Error: Turnout too low (R: 45.55%, D: 54.45%)
 sum(dooby_avgs$avg_Rvotes)
 sum(dooby_avgs$avg_Dvotes)
-# 539 total ev...
+sum(dooby_avgs$total_votes)
+
+### R: 170, D: 365 (+3 from D.C. = 368)
 sum(dooby_avgs$ev)
 sum(dooby_avgs$ev_won)
 sum(dooby_avgs$ev_lost)
 
 
+
 ################################## TESTING #####################################
 
 # Calculating Electoral College votes for each simulated election
-ev_dist <- data.frame()
-for (i in 1:10000) {
-  
-  
-  elec_res <- dooby %>% 
-    filter(election_id == i) %>% 
-    summarize(elec_res = sum(ev_won)) %>% 
-    pull(elec_res)
-  
-  
-  ev_dist <- rbind(ev_dist,
-                   cbind(election_id = i,
-                         election_result = elec_res))
-}
+ev_dist <- dooby %>% 
+  group_by(election_id) %>% 
+  summarize(election_result = sum(ev_won),
+            Rvotes = sum(sim_Rvotes_s_2020),
+            Dvotes = sum(sim_Dvotes_s_2020)) %>% 
+  mutate(total_votes = Rvotes + Dvotes,
+         D_pv2p = Dvotes / total_votes,
+         R_pv2p = Rvotes / total_votes)
 
 
 # Plotting distribution of results
