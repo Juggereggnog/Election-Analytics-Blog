@@ -14,7 +14,21 @@ turnout <- read_csv("data/final/turnout_1980-2016.csv") %>%
 
 pollstate <- read_csv("data/final/pollavg_bystate_1968-2016.csv")
 
-pvstate <- read_csv("data/final/popvote_bystate_1948-2016.csv")
+error_538 <- read_csv("data/eval/error_538.csv")
+
+error_econ <- read_csv("data/eval/error_economist.csv")
+
+poll_avg_new <- read_csv("data/eval/pollavg_1948-2020.csv")
+
+pvstate <- read_csv("data/eval/popvote_bystate_1948-2020.csv") %>% 
+  arrange(state, year) %>% 
+  mutate(win_margin = D_pv2p - R_pv2p,
+         state_win = case_when(win_margin > 0 ~ "win",
+                               win_margin < 0 ~ "lose",
+                               TRUE ~ "tie")) %>% 
+  select(state, year, everything())
+
+popvote_new <- read_csv("data/eval/popvote_1948-2020.csv")
 
 vep <- read_csv("data/final/vep_1980-2016.csv")
 
@@ -28,6 +42,13 @@ poll_pvstate <- pvstate %>%
 
 poll_pvstate_vep <- poll_pvstate %>% 
   inner_join(vep)
+
+
+
+######################### DESCRIPTIVE ANALYSIS #################################
+
+#
+
 
 
 
@@ -208,14 +229,25 @@ dooby %>%
 ggsave("better_binomial.png", path = "figures/final", height = 6, width = 10)
 
 
-# Same process but with the average win margin for each state
+# Gathering win statistics for each state
+dooby_wins <- dooby %>% 
+  group_by(state) %>% 
+  count(state_win) %>% 
+  pivot_wider(names_from = state_win,
+              values_from = n) %>% 
+  mutate(win_prob = win / (win + lose))
+
+
+# Same process as dooby but with the average win margin for each state
 dooby_avgs <- dooby %>% 
   group_by(state) %>% 
-  summarize(avg_win_margin = mean(sim_elxns_s_2020),
-            avg_Rvotes = mean(sim_Rvotes_s_2020),
-            avg_Dvotes = mean(sim_Dvotes_s_2020),
-  ) %>% 
-  mutate(state_win = case_when(avg_win_margin > 0 ~ "win",
+  summarize(avg_Rvotes = mean(sim_Rvotes_s_2020),
+            avg_Dvotes = mean(sim_Dvotes_s_2020)) %>% 
+  mutate(avg_total_votes = avg_Rvotes + avg_Dvotes,
+         avg_D_pv2p = avg_Dvotes / avg_total_votes,
+         avg_R_pv2p = avg_Rvotes / avg_total_votes,
+         avg_win_margin = avg_D_pv2p - avg_R_pv2p,
+         avg_state_win = case_when(avg_win_margin > 0 ~ "win",
                                avg_win_margin < 0 ~ "lose",
                                TRUE ~ "tie"),
          state_abb = state.abb[match(state, state.name)],
@@ -268,13 +300,15 @@ dooby_avgs <- dooby %>%
                         state_abb == "WA" ~ 12,
                         state_abb == "WV" ~ 5,
                         state_abb == "WI" ~ 10,
-                        state_abb == "WY" ~ 3,
-                        TRUE ~ 999),
-         ev_won = ifelse(state_win == "win", ev, 0),
-         ev_lost = ifelse(state_win == "win", 0, ev),
-         total_votes = avg_Rvotes + avg_Dvotes,
-         D_pv2p = avg_Dvotes / total_votes,
-         R_pv2p = avg_Rvotes / total_votes)
+                        state_abb == "WY" ~ 3),
+         ev_won = ifelse(avg_state_win == "win", ev, 0),
+         ev_lost = ifelse(avg_state_win == "win", 0, ev)) %>% 
+  full_join(pvstate %>% filter(year == 2020), by = "state") %>% 
+  filter(state != "District of Columbia") %>% 
+  full_join(dooby_wins, by = "state") %>% 
+  select(state, state_abb, avg_total_votes, avg_Dvotes, avg_Rvotes,
+         avg_D_pv2p, avg_R_pv2p, avg_win_margin, avg_state_win, ev:ev_lost, win,
+         lose, win_prob, total:state_win, -year, -tie)
 
 
 dooby_avgs %>% 
@@ -289,7 +323,7 @@ ggsave("avg_elxn.png", path = "figures/final", height = 6, width = 8)
 ### Category Error: Turnout too low (R: 45.55%, D: 54.45%)
 sum(dooby_avgs$avg_Rvotes)
 sum(dooby_avgs$avg_Dvotes)
-sum(dooby_avgs$total_votes)
+sum(dooby_avgs$pred_total_votes)
 
 ### R: 170, D: 365 (+3 from D.C. = 368)
 sum(dooby_avgs$ev)
@@ -331,31 +365,26 @@ ev_dist %>%
 
 
 
-
-
-
-
-pvstate_new <- read_csv("data/eval/popvote_bystate_1948-2020.csv") %>% 
-  arrange(state, year) %>% 
-  select(state, year, everything())
-
-popvote_new <- read_csv("data/eval/popvote_1948-2020.csv")
-
-error_538 <- read_csv("data/eval/error_538.csv")
-
-error_econ <- read_csv("data/eval/error_economist.csv")
-
-poll_avg_new <- read_csv("data/eval/pollavg_1948-2020.csv")
-
-
-
-dooby_avgs_new <- dooby_avgs %>% 
-  full_join(pvstate_new %>% filter(year == 2020), by = "state")
-
-
-ggplot(dooby_avgs_new, aes(x = D_pv2p.x, y = D_pv2p.y)) +
+ggplot(dooby_avgs, aes(x = pred_D_pv2p, y = D_pv2p)) +
   geom_point() + 
   geom_abline(slope = 1, intercept = 0) +
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm") +
+  labs(x = "Predicted Democratic Two-Party Vote Share",
+       y = "Actual Democratic Two-Party Vote Share")
 
+
+
+
+
+
+
+
+
+
+
+
+### Turnout modeling includes midterm elections, depresses turnout average (FiF)
+
+### Normal distribution allows for negative vote probabilities for some parties;
+### creates NAs for those election simulations (FiF)
 
