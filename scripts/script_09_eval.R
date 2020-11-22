@@ -4,21 +4,7 @@ library(statebins)
 library(geofacet)
 
 
-turnout <- read_csv("data/final/turnout_1980-2016.csv") %>% 
-  mutate(turnout_pct = substr(turnout_pct, 1, nchar(turnout_pct) - 1),
-         turnout_pct = as.double(turnout_pct),
-         turnout_pct = ifelse(year == 2016, round(turnout_pct * 100, 1), turnout_pct)) %>% 
-  filter(!is.na(turnout_pct),
-         state != "District of Columbia",
-         state != "United States")
-
-pollstate <- read_csv("data/final/pollavg_bystate_1968-2016.csv")
-
-error_538 <- read_csv("data/eval/error_538.csv")
-
-error_econ <- read_csv("data/eval/error_economist.csv")
-
-poll_avg_new <- read_csv("data/eval/pollavg_1948-2020.csv")
+popvote <- read_csv("data/eval/popvote_1948-2020.csv")
 
 pvstate <- read_csv("data/eval/popvote_bystate_1948-2020.csv") %>% 
   arrange(state, year) %>% 
@@ -28,19 +14,32 @@ pvstate <- read_csv("data/eval/popvote_bystate_1948-2020.csv") %>%
                                TRUE ~ "tie")) %>% 
   select(state, year, everything())
 
-popvote_new <- read_csv("data/eval/popvote_1948-2020.csv")
+pollavg <- read_csv("data/eval/pollavg_1948-2020.csv")
+
+pollstate <- read_csv("data/final/pollavg_bystate_1968-2016.csv")
+
+turnout <- read_csv("data/final/turnout_1980-2016.csv") %>% 
+  mutate(turnout_pct = substr(turnout_pct, 1, nchar(turnout_pct) - 1),
+         turnout_pct = as.double(turnout_pct),
+         turnout_pct = ifelse(year == 2016, round(turnout_pct * 100, 1), turnout_pct)) %>% 
+  filter(!is.na(turnout_pct),
+         state != "District of Columbia",
+         state != "United States")
 
 vep <- read_csv("data/final/vep_1980-2016.csv")
 
-poll_pvstate <- pvstate %>% 
+error_538 <- read_csv("data/eval/error_538.csv")
+
+error_econ <- read_csv("data/eval/error_economist.csv")
+
+
+poll_pvstate_vep <- pvstate %>% 
   inner_join(pollstate %>% 
                filter(weeks_left <= 5, days_left >= 3, state != "District of Columbia") %>%
                group_by(state, year, candidate_name) %>%
                top_n(1, poll_date)) %>% 
   mutate(D_pv = (D / total) * 100,
-         R_pv = (R / total) * 100)
-
-poll_pvstate_vep <- poll_pvstate %>% 
+         R_pv = (R / total) * 100) %>% 
   inner_join(vep)
 
 
@@ -92,6 +91,7 @@ pollD_sd <- sd(pollstate_2020 %>%
                  pull(avg_poll)) / 100
 
 
+# Running binomial logit regression for each state
 meow <- lapply(s, function(s){
   
   VEP_s_2020 <- as.integer(vep$VEP[vep$state == s & vep$year == 2016])
@@ -137,8 +137,7 @@ meow <- lapply(s, function(s){
   
   ## Simulating a distribution of election results: Biden win margin
   sim_elxns_s_2020 <- ((sim_Dvotes_s_2020 - sim_Rvotes_s_2020) / (sim_Dvotes_s_2020 + sim_Rvotes_s_2020)) * 100
-  
-  
+
   
   cbind.data.frame(election_id = 1:10000,
                    state = s,
@@ -226,7 +225,7 @@ dooby %>%
        fill = "Dem Results") +
   theme_bw()
 
-ggsave("better_binomial.png", path = "figures/final", height = 6, width = 10)
+ggsave("better_binomial.png", path = "figures/eval", height = 6, width = 10)
 
 
 # Gathering win statistics for each state
@@ -308,22 +307,24 @@ dooby_avgs <- dooby %>%
   full_join(dooby_wins, by = "state") %>% 
   select(state, state_abb, avg_total_votes, avg_Dvotes, avg_Rvotes,
          avg_D_pv2p, avg_R_pv2p, avg_win_margin, avg_state_win, ev:ev_lost, win,
-         lose, win_prob, total:state_win, -year, -tie)
+         lose, win_prob, total:state_win, -year, -tie) %>% 
+  mutate(bin_avg_state_win = ifelse(avg_state_win == "win", 1, 0),
+         bin_state_win = ifelse(state_win == "win", 1, 0))
 
 
 dooby_avgs %>% 
-  ggplot(aes(state = state, fill = state_win)) +
+  ggplot(aes(state = state, fill = avg_state_win)) +
   geom_statebins() +
   theme_statebins() +
   labs(fill = "Average Dem Result")
 
-ggsave("avg_elxn.png", path = "figures/final", height = 6, width = 8)
+ggsave("avg_elxn.png", path = "figures/eval", height = 6, width = 8)
 
 
 ### Category Error: Turnout too low (R: 45.55%, D: 54.45%)
 sum(dooby_avgs$avg_Rvotes)
 sum(dooby_avgs$avg_Dvotes)
-sum(dooby_avgs$pred_total_votes)
+sum(dooby_avgs$avg_total_votes)
 
 ### R: 170, D: 365 (+3 from D.C. = 368)
 sum(dooby_avgs$ev)
@@ -354,7 +355,7 @@ ev_dist %>%
        y = "# of Elections",
        fill = "Biden Wins")
 
-ggsave("election_results.png", path = "figures/final", height = 4, width = 8)
+ggsave("election_results.png", path = "figures/eval", height = 4, width = 8)
 
 
 # Counting number of wins and losses (for intuition and proportion) (91.38% win chance)
@@ -362,24 +363,34 @@ ev_dist %>%
   count(election_result >= 267)
 
 
-
-
-
-ggplot(dooby_avgs, aes(x = pred_D_pv2p, y = D_pv2p)) +
-  geom_point() + 
+# Plotting actual D_pv2p against predicted D_pv2p
+ggplot(dooby_avgs, aes(x = avg_D_pv2p, y = D_pv2p, label = state_abb)) +
+  geom_text() +
   geom_abline(slope = 1, intercept = 0) +
+  geom_vline(xintercept = 0.5, linetype = "dashed") +
+  geom_hline(yintercept = 0.5, linetype = "dashed") +
   geom_smooth(method = "lm") +
   labs(x = "Predicted Democratic Two-Party Vote Share",
        y = "Actual Democratic Two-Party Vote Share")
 
 
+ggsave("act_pred_scatter.png", path = "figures/eval", height = 6, width = 6)
 
 
+brier <- sum((dooby_avgs$win_prob - as.numeric(dooby_avgs$bin_state_win))^2) / 50
+
+rmse <- sqrt(sum((dooby_avgs$avg_D_pv2p - dooby_avgs$D_pv2p)^2) / 50) * 100
+
+rmse_538 <- sqrt(sum(error_538$error^2) / 50)
+
+rmse_econ <- sqrt(sum(error_econ$error^2) / 50)
 
 
-
-
-
+dooby_avgs %>% 
+  select(state, win_prob, bin_state_win, avg_D_pv2p, D_pv2p) %>% 
+  mutate(diff = abs(avg_D_pv2p - D_pv2p),
+         diff_brier = abs(win_prob - bin_state_win)) %>% 
+  View()
 
 
 
