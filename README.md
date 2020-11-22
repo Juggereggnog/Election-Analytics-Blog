@@ -12,3 +12,5 @@ sections below to find predictions and analysis related to that subject.
 #### [Week 6: Ground Game](posts/post_06_ground_game.md)
 #### [Week 7: Shocks](posts/post_07_shocks.md)
 #### [Week 8: Final Prediction](posts/post_08_final.md)
+#### [Week 9: Model Evaluation](posts/post_09_eval.md)
+#### [Special Entry: Historical Trends](posts/post_10_trends.md)
