@@ -25,6 +25,20 @@ pvstate <- read_csv("data/eval/popvote_bystate_1948-2020.csv") %>%
          same = ifelse(state_win == prev_win, "same", "diff")) %>% 
   select(state, year, everything())
 
+pvcounty <- read_csv("data/eval/popvote_bycounty_2000-2016.csv")
+
+# Vote1 = Biden; Vote2 = Trump
+pvcounty_2020 <- read_csv("data/eval/popvote_bycounty_2020.csv", skip = 1) %>% 
+  mutate(year = 2020,
+         D_pv2p = vote1 / totalvote,
+         R_pv2p = vote2 / totalvote,
+         D_win_margin = D_pv2p - R_pv2p) %>% 
+  select(year, fips:vote2, D_pv2p:D_win_margin)
+
+# pvcounty %>% 
+#   full_join(pvcounty_2020, by = c("year", "fips", "county" = "name")) %>% 
+#   View()
+
 pollavg <- read_csv("data/eval/pollavg_1948-2020.csv")
 
 pollstate <- read_csv("data/final/pollavg_bystate_1968-2016.csv")
@@ -138,7 +152,7 @@ turnout %>%
   theme_bw() +
   facet_wrap(~ state)
 
-ggsave("state_turnout_overtime.png", path = "figures/eval", height = 4, width = 8)
+ggsave("state_turnout_overtime.png", path = "figures/eval", height = 8, width = 8)
 
 
 # Plotting 2020 win margin
@@ -154,9 +168,9 @@ plot_usmap(data = pvstate, regions = "states", values = "win_margin") +
 
 # Number of states who voted same in last n elections
 pvstate %>% 
-  filter(year >= 2016) %>% 
+  filter(year >= 1984) %>% 
   count(state, state_win) %>% 
-  filter(n == 2)
+  filter(n == 10)
 
 
 # Many states vote the same across years
@@ -173,6 +187,42 @@ popvote %>%
   filter(year >= 1992, party == "democrat") %>% 
   select(year, party, candidate, pv2p, pv_win) %>% 
   gt()
+
+
+
+# County election map 2016
+plot_usmap(data = pvcounty, regions = "county", values = "D_win_margin") + 
+  scale_fill_gradient2(
+    low = "red",
+    mid = "white",
+    high = "blue",
+    name = "Win Margin (%)") +
+  theme_void() +
+  facet_wrap(. ~ year)
+
+plot_usmap(data = pvcounty %>% filter(year == 2016), regions = "county", values = "D_win_margin") + 
+  scale_fill_gradient2(
+    low = "red",
+    mid = "white",
+    high = "blue",
+    name = "Win Margin (%)") +
+  theme_void()
+
+ggsave("county_map_2016.png", path = "figures/eval", height = 4, width = 8)
+
+
+# County election map 2020
+plot_usmap(data = pvcounty_2020, regions = "county", values = "D_win_margin") + 
+  scale_fill_gradient2(
+    low = "red",
+    mid = "white",
+    high = "blue",
+    name = "Win Margin (%)") +
+  theme_void() +
+  facet_wrap(. ~ year)
+
+ggsave("county_map_2020.png", path = "figures/eval", height = 4, width = 8)
+
 
 
 # 4th elected first-term incumbent to lose reelection bid in last 100 years
