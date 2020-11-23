@@ -32,3 +32,18 @@ There is a general rise or consistency in turnout percentage for all states, wit
 
 ![Seven Eighths](../figures/eval/sev_eighths.png)
 
+
+The
+
+
+### States Voting Different Party From Previous Election 1984-2020
+
+![Less Light](../figures/eval/variable_states.png)
+
+The
+
+
+### Fourth *Elected* First-Term Incumbent to Lose in Last Century
+
+![First Term Loss](../figures/eval/first_term_loss.png)
+

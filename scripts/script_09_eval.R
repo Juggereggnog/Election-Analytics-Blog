@@ -13,11 +13,16 @@ popvote <- read_csv("data/eval/popvote_1948-2020.csv") %>%
 
 pvstate <- read_csv("data/eval/popvote_bystate_1948-2020.csv") %>% 
   arrange(state, year) %>% 
-  mutate(win_margin = D_pv2p - R_pv2p,
+  mutate(D_pv2p = ifelse(year == 2020, D_pv2p * 100, D_pv2p),
+         R_pv2p = ifelse(year == 2020, R_pv2p * 100, R_pv2p),
+         win_margin = D_pv2p - R_pv2p,
          state_win = case_when(win_margin > 0 ~ "win",
                                win_margin < 0 ~ "lose",
                                TRUE ~ "tie")) %>% 
   filter(state != "District of Columbia") %>% 
+  group_by(state) %>% 
+  mutate(prev_win = lag(state_win, n = 1),
+         same = ifelse(state_win == prev_win, "same", "diff")) %>% 
   select(state, year, everything())
 
 pollavg <- read_csv("data/eval/pollavg_1948-2020.csv")
@@ -136,9 +141,44 @@ turnout %>%
 ggsave("state_turnout_overtime.png", path = "figures/eval", height = 4, width = 8)
 
 
+# Plotting 2020 win margin
+plot_usmap(data = pvstate, regions = "states", values = "win_margin") + 
+  scale_fill_gradient2(
+    low = "red",
+    mid = "white",
+    high = "blue",
+    name = "Win Margin (%)") +
+  theme_void() +
+  facet_wrap(. ~ year)
+
+
+# Number of states who voted same in last n elections
+pvstate %>% 
+  filter(year >= 2016) %>% 
+  count(state, state_win) %>% 
+  filter(n == 2)
+
+
+# Many states vote the same across years
+plot_usmap(data = pvstate %>% filter(year >= 1984), regions = "states", values = "same") + 
+  scale_fill_manual(values = c("red", "white"), name = "Win") +
+  theme_void() +
+  facet_wrap(. ~ year)
+
+ggsave("variable_states.png", path = "figures/eval", height = 4, width = 8)
+
+
+# Democrats won last 7 of 8 national popular votes
 popvote %>% 
   filter(year >= 1992, party == "democrat") %>% 
   select(year, party, candidate, pv2p, pv_win) %>% 
+  gt()
+
+
+# 4th elected first-term incumbent to lose reelection bid in last 100 years
+popvote %>% 
+  filter(incumbent == TRUE) %>% 
+  select(year, party, incumbent, candidate, winner) %>% 
   gt()
 
 
