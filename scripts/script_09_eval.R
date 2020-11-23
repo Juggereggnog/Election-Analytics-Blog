@@ -80,29 +80,31 @@ pollstate_2020$avg_poll <- c(38.2, 57.0, 43.4, 51.0, 48.7, 45.3, 35.9, 59.1,
 # South Dakota (39.2, 53.8), Wyoming (30.5, 62.6)
 
 
+pollstate_2020 <- pollstate_2020 %>% 
+  pivot_wider(names_from = party, values_from = avg_poll) %>% 
+  mutate(win_margin = democrat - republican,
+         # Alternate reality where Trump had 2.5% uniform swing in poll averages
+         shift_d = democrat - 2.5,
+         shift_r = republican + 2.5)
+
+
 s <- unique(poll_pvstate_vep$state)
 
-pollR_sd <- sd(pollstate_2020 %>% 
-                 filter(party == "republican", !is.na(avg_poll)) %>% 
-                 pull(avg_poll)) / 100
+pollR_sd <- sd(pollstate_2020$republican) / 100
 
-pollD_sd <- sd(pollstate_2020 %>% 
-                 filter(party == "democrat", !is.na(avg_poll)) %>% 
-                 pull(avg_poll)) / 100
+pollD_sd <- sd(pollstate_2020$democrat) / 100
 
 
 # Running binomial logit regression for each state
 meow <- lapply(s, function(s){
   
+  ### hpoll_s_R_2020 <- pollstate_2020$shift_r[pollstate_2020$state == s]
+  ### hpoll_s_D_2020 <- pollstate_2020$shift_d[pollstate_2020$state == s]
+  
   VEP_s_2020 <- as.integer(vep$VEP[vep$state == s & vep$year == 2016])
   
-  poll_s_R_2020 <- pollstate_2020 %>% 
-    filter(state == s, party == "republican") %>% 
-    pull(avg_poll)
-  
-  poll_s_D_2020 <- pollstate_2020 %>% 
-    filter(state == s, party == "democrat") %>% 
-    pull(avg_poll)
+  poll_s_R_2020 <- pollstate_2020$republican[pollstate_2020$state == s]
+  poll_s_D_2020 <- pollstate_2020$democrat[pollstate_2020$state == s]
   
   s_R <- poll_pvstate_vep %>% filter(state == s, party == "republican")
   s_D <- poll_pvstate_vep %>% filter(state == s, party == "democrat")
@@ -307,7 +309,7 @@ dooby_avgs <- dooby %>%
   full_join(dooby_wins, by = "state") %>% 
   select(state, state_abb, avg_total_votes, avg_Dvotes, avg_Rvotes,
          avg_D_pv2p, avg_R_pv2p, avg_win_margin, avg_state_win, ev:ev_lost, win,
-         lose, win_prob, total:state_win, -year, -tie) %>% 
+         lose, win_prob, total:state_win) %>% 
   mutate(bin_avg_state_win = ifelse(avg_state_win == "win", 1, 0),
          bin_state_win = ifelse(state_win == "win", 1, 0))
 
@@ -389,8 +391,7 @@ rmse_econ <- sqrt(sum(error_econ$error^2) / 50)
 dooby_avgs %>% 
   select(state, win_prob, bin_state_win, avg_D_pv2p, D_pv2p) %>% 
   mutate(diff = abs(avg_D_pv2p - D_pv2p),
-         diff_brier = abs(win_prob - bin_state_win)) %>% 
-  View()
+         diff_brier = abs(win_prob - bin_state_win))
 
 
 
