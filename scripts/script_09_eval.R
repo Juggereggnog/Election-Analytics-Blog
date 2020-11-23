@@ -1,10 +1,15 @@
 library(tidyverse)
 library(lubridate)
+library(usmap)
 library(statebins)
 library(geofacet)
+library(gt)
 
 
-popvote <- read_csv("data/eval/popvote_1948-2020.csv")
+popvote <- read_csv("data/eval/popvote_1948-2020.csv") %>% 
+  mutate(pv = ifelse(year == 2020, pv * 100, pv),
+         pv2p = ifelse(year == 2020, pv2p * 100, pv2p),
+         pv_win = ifelse(pv2p > 50.0, TRUE, FALSE))
 
 pvstate <- read_csv("data/eval/popvote_bystate_1948-2020.csv") %>% 
   arrange(state, year) %>% 
@@ -12,48 +17,14 @@ pvstate <- read_csv("data/eval/popvote_bystate_1948-2020.csv") %>%
          state_win = case_when(win_margin > 0 ~ "win",
                                win_margin < 0 ~ "lose",
                                TRUE ~ "tie")) %>% 
+  filter(state != "District of Columbia") %>% 
   select(state, year, everything())
 
 pollavg <- read_csv("data/eval/pollavg_1948-2020.csv")
 
 pollstate <- read_csv("data/final/pollavg_bystate_1968-2016.csv")
 
-turnout <- read_csv("data/final/turnout_1980-2016.csv") %>% 
-  mutate(turnout_pct = substr(turnout_pct, 1, nchar(turnout_pct) - 1),
-         turnout_pct = as.double(turnout_pct),
-         turnout_pct = ifelse(year == 2016, round(turnout_pct * 100, 1), turnout_pct)) %>% 
-  filter(!is.na(turnout_pct),
-         state != "District of Columbia",
-         state != "United States")
 
-vep <- read_csv("data/final/vep_1980-2016.csv")
-
-error_538 <- read_csv("data/eval/error_538.csv")
-
-error_econ <- read_csv("data/eval/error_economist.csv")
-
-
-poll_pvstate_vep <- pvstate %>% 
-  inner_join(pollstate %>% 
-               filter(weeks_left <= 5, days_left >= 3, state != "District of Columbia") %>%
-               group_by(state, year, candidate_name) %>%
-               top_n(1, poll_date)) %>% 
-  mutate(D_pv = (D / total) * 100,
-         R_pv = (R / total) * 100) %>% 
-  inner_join(vep)
-
-
-
-######################### DESCRIPTIVE ANALYSIS #################################
-
-#
-
-
-
-
-######################## PREDICTIVE ANALYSIS ###################################
-
-# Making (relevant) polls_2020 dataframe (polls 5 weeks out)
 # Making (relevant) polls_2020 dataframe (polls 5 weeks out)
 pollstate_2020 <- data.frame(ID = 1:100)
 pollstate_2020$state <- state.name
@@ -79,7 +50,6 @@ pollstate_2020$avg_poll <- c(38.2, 57.0, 43.4, 51.0, 48.7, 45.3, 35.9, 59.1,
 # DC (89.8, 6.7), Nebraska (42.4, 52.4), Rhode Island (63.4, 32.3),
 # South Dakota (39.2, 53.8), Wyoming (30.5, 62.6)
 
-
 pollstate_2020 <- pollstate_2020 %>% 
   pivot_wider(names_from = party, values_from = avg_poll) %>% 
   mutate(win_margin = democrat - republican,
@@ -87,6 +57,93 @@ pollstate_2020 <- pollstate_2020 %>%
          shift_d = democrat - 2.5,
          shift_r = republican + 2.5)
 
+
+vep <- read_csv("data/final/vep_1980-2016.csv") %>% 
+  arrange(year)
+
+vep <- vep %>% 
+  filter(year %% 4 == 0) %>% 
+  group_by(state) %>% 
+  mutate(prev_vep = lag(VEP, n = 1),
+         vep_margin = VEP - prev_vep) %>% 
+  filter(year != 1980) %>% 
+  summarize(year = year,
+            state = state,
+            VEP = VEP,
+            avg_vep_margin = round(mean(vep_margin))) %>% 
+  filter(year == 2016) %>% 
+  mutate(VEP = VEP + avg_vep_margin, year = 2020) %>% 
+  select(year, state, VEP) %>% 
+  full_join(vep, by = c("year", "state", "VEP")) %>% 
+  filter(!state %in% c("United States", "District of Columbia")) %>% 
+  arrange(year, state) %>% 
+  select(-VAP)
+
+turnout <- read_csv("data/final/turnout_1980-2016.csv") %>% 
+  mutate(turnout_pct = substr(turnout_pct, 1, nchar(turnout_pct) - 1),
+         turnout_pct = as.double(turnout_pct),
+         turnout_pct = ifelse(year == 2016, round(turnout_pct * 100, 1), turnout_pct)) %>% 
+  filter(!is.na(turnout_pct),
+         !state %in% c("District of Columbia", "United States"))
+
+turnout <- turnout %>% 
+  full_join(vep, by = c("year", "state", "VEP")) %>% 
+  arrange(year, state) %>% 
+  filter(year == 2020) %>% 
+  mutate(turnout = pvstate$total[pvstate$year == 2020],
+         turnout_pct = round(100 * turnout / VEP, 1)) %>% 
+  full_join(turnout) %>% 
+  arrange(year, state) %>% 
+  select(-VAP)
+
+error_538 <- read_csv("data/eval/error_538.csv")
+
+error_econ <- read_csv("data/eval/error_economist.csv")
+
+poll_pvstate_vep <- pvstate %>% 
+  inner_join(pollstate %>% 
+               filter(weeks_left <= 5, days_left >= 3, state != "District of Columbia") %>%
+               group_by(state, year, candidate_name) %>%
+               top_n(1, poll_date)) %>% 
+  mutate(D_pv = (D / total) * 100,
+         R_pv = (R / total) * 100) %>% 
+  inner_join(vep)
+
+
+
+######################### DESCRIPTIVE ANALYSIS #################################
+
+# Look how red 2020 is!!!!
+plot_usmap(data = turnout %>% filter(year %% 4 == 0), regions = "states", values = "turnout_pct") + 
+  scale_fill_gradient(
+    low = "white",
+    high = "red",
+    name = "Turnout (%)") +
+  theme_void() +
+  facet_wrap(. ~ year)
+
+ggsave("turnout_overtime.png", path = "figures/eval", height = 4, width = 8)
+
+
+# General trend upwards that 2020 continues (except for Mississippi... (and New York))
+turnout %>% 
+  filter(year %% 4 == 0) %>% 
+  ggplot(aes(x = year, y = turnout_pct)) +
+  geom_line() +
+  theme_bw() +
+  facet_wrap(~ state)
+
+ggsave("state_turnout_overtime.png", path = "figures/eval", height = 4, width = 8)
+
+
+popvote %>% 
+  filter(year >= 1992, party == "democrat") %>% 
+  select(year, party, candidate, pv2p, pv_win) %>% 
+  gt()
+
+
+
+######################## PREDICTIVE ANALYSIS ###################################
 
 s <- unique(poll_pvstate_vep$state)
 
@@ -155,6 +212,7 @@ meow <- lapply(s, function(s){
 })
 
 dooby <- do.call(rbind, meow)
+
 
 # DC not included, but auto-awarded to Biden (+3 EV)
 dooby <- dooby %>% 
@@ -394,9 +452,7 @@ dooby_avgs %>%
          diff_brier = abs(win_prob - bin_state_win))
 
 
-
 ### Turnout modeling includes midterm elections, depresses turnout average (FiF)
 
 ### Normal distribution allows for negative vote probabilities for some parties;
 ### creates NAs for those election simulations (FiF)
-
