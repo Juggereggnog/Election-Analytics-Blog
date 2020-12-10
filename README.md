@@ -13,5 +13,5 @@ sections below to find predictions and analysis related to that subject.
 #### [Week 7: Shocks](posts/post_07_shocks.md)
 #### [Week 8: Final Prediction](posts/post_08_final.md)
 #### [Week 9: Model Evaluation](posts/post_09_eval.md)
-#### [Week 10: Media Narratives](posts/post_11_narrative.md)
+#### [Week 10: Testing Narratives](posts/post_11_narrative.md)
 #### [Special Entry: Historical Trends](posts/post_10_trends.md)
