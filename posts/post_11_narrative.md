@@ -4,7 +4,7 @@
 
 
 
-## Was It the Economy, Stupid?
+## COVID Containment & Economic Recovery
 
 
 1. Exit Polls show primary economic concern (mitigated by partisan-filtered perception of 
@@ -24,11 +24,15 @@ The
 
 
 
-## Articles Interested in Narrative
+## Articles Supporting Narrative
 
 - [Forbes: Why Did Trump Outperform the Polls? The Economy](https://www.forbes.com/sites/advisor/2020/11/04/trump-economy-polls/?sh=5ccb29007fb5)
-- []()
-- []()
-- []()
-- []()
-- []()
+- [New York Times: The Polls Underestimated Trump — Again. Nobody Agrees on Why.](https://www.nytimes.com/2020/11/04/us/politics/poll-results.html)
+- [The Guardian: Fears about economy under Covid lockdown helped Trump outperform polls](https://www.theguardian.com/world/2020/nov/04/exit-polls-economy-covid-lockdown-trump)
+
+
+
+## Data Citation
+
+Thank you Yao, one final time, for providing an economics dataset including Q3
+data.

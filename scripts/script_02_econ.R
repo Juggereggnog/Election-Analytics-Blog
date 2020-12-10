@@ -124,7 +124,7 @@ nat_econ_q2_q3 <- econ %>%
 pvn <- popvote %>% 
   filter(incumbent_party == TRUE) %>% 
   left_join(nat_econ_q2_q3, by = "year") %>% 
-  select(year, q2_q3_unem_chng, candidate, party, winner, pv2p)
+  select(year, q2_q3_unem_chng, candidate, party, winner, pv, pv2p)
 
 
 # General correlation (-0.82)
