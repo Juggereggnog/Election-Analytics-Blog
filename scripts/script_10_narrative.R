@@ -2,13 +2,15 @@ library(tidyverse)
 library(usmap)
 library(statebins)
 library(geofacet)
+library(lubridate)
+library(egg)
 
-popvote <- read_csv("data/eval/popvote_1948-2020.csv") %>% 
+popvote <- read_csv("data/narrative/popvote_1948-2020.csv") %>% 
   mutate(pv = ifelse(year == 2020, pv * 100, pv),
          pv2p = ifelse(year == 2020, pv2p * 100, pv2p),
          pv_win = ifelse(pv2p > 50.0, TRUE, FALSE))
 
-pvstate <- read_csv("data/eval/popvote_bystate_1948-2020.csv") %>% 
+pvstate <- read_csv("data/narrative/popvote_bystate_1948-2020.csv") %>% 
   arrange(state, year) %>% 
   mutate(D_pv2p = ifelse(year == 2020, D_pv2p * 100, D_pv2p),
          R_pv2p = ifelse(year == 2020, R_pv2p * 100, R_pv2p),
@@ -22,9 +24,18 @@ pvstate <- read_csv("data/eval/popvote_bystate_1948-2020.csv") %>%
          same = ifelse(state_win == prev_win, "same", "diff")) %>% 
   select(state, year, everything())
 
-pollavg <- read_csv("data/eval/pollavg_1948-2020.csv")
+econ <- read_csv("data/narrative/econ.csv") %>% 
+  filter(year >= 1948)
 
-pollstate <- read_csv("data/final/pollavg_bystate_1968-2016.csv")
+covid <- read_csv("data/narrative/case_daily_trends__united_states.csv", skip = 3) %>% 
+  mutate(date = mdy(Date),
+         new_cases = `New Cases`,
+         roll_avg = `7-Day Moving Avg`) %>% 
+  select(date:roll_avg)
+
+pollavg <- read_csv("data/narrative/pollavg_1948-2020.csv")
+
+pollstate <- read_csv("data/narrative/pollavg_bystate_1968-2016.csv")
 
 
 # Making (relevant) polls_2020 dataframe (polls 2 days out)
@@ -57,7 +68,7 @@ pollstate_2020 <- pollstate_2020 %>%
          shift_r = republican + 2.5)
 
 
-vep <- read_csv("data/final/vep_1980-2016.csv") %>% 
+vep <- read_csv("data/narrative/vep_1980-2016.csv") %>% 
   arrange(year)
 
 vep <- vep %>% 
@@ -78,7 +89,7 @@ vep <- vep %>%
   arrange(year, state) %>% 
   select(-VAP)
 
-turnout <- read_csv("data/final/turnout_1980-2016.csv") %>% 
+turnout <- read_csv("data/narrative/turnout_1980-2016.csv") %>% 
   mutate(turnout_pct = substr(turnout_pct, 1, nchar(turnout_pct) - 1),
          turnout_pct = as.double(turnout_pct),
          turnout_pct = ifelse(year == 2016, round(turnout_pct * 100, 1), turnout_pct)) %>% 
@@ -108,8 +119,68 @@ poll_pvstate_vep <- pvstate %>%
 
 ######################### DESCRIPTIVE ANALYSIS #################################
 
-# Meow
+# Checking correlation between polling average and rolling average
+poll_covid <- pollavg %>% 
+  filter(year == 2020) %>% 
+  inner_join(covid, by = c("poll_date" = "date"))
 
+
+# Biden pv NOT overestimated (+0.005), Trump underestimated (-0.0338)
+p1 <- poll_covid %>% 
+  filter(party == "republican") %>% 
+  ggplot(aes(x = poll_date, y = avg_support)) +
+  geom_line(color = "red", alpha = 0.6, size = 1.5) +
+  geom_smooth(method = "lm") +
+  labs(x = "Date of Poll",
+      y = "Average Support") +
+  theme_bw()
+
+p2 <- poll_covid %>% 
+  filter(party == "republican") %>% 
+  ggplot(aes(x = poll_date)) +
+  geom_col(aes(y = new_cases), fill = "darkblue", alpha = 0.65) +
+  geom_line(aes(y = roll_avg), color = "red", alpha = 0.6, size = 2) +
+  geom_smooth(aes(y = roll_avg), method = "lm") +
+  labs(x = "Date",
+       y = "# of New Cases") +
+  theme_bw()
+
+# Negative Correlation!
+ggarrange(p1, p2, ncol = 1)
+
+ggsave("polls_n_pandemics.png", path = "figures/narrative", height = 4, width = 8)
+
+
+# Weak correlations (< 0.12) belie apparent visual inverse relationship
+cor(poll_covid$avg_support[month(poll_covid$poll_date) <= 7], poll_covid$roll_avg[month(poll_covid$poll_date) <= 7])
+cor(poll_covid$avg_support[month(poll_covid$poll_date) %in% 7:9], poll_covid$roll_avg[month(poll_covid$poll_date) %in% 7:9])
+cor(poll_covid$avg_support[month(poll_covid$poll_date) <= 7], poll_covid$new_cases[month(poll_covid$poll_date) <= 7])
+cor(poll_covid$avg_support[month(poll_covid$poll_date) %in% 7:9], poll_covid$new_cases[month(poll_covid$poll_date) %in% 7:9])
+
+
+mlk <- pollavg %>% 
+  mutate(quarter = case_when(month(poll_date) %in% 1:3 ~ 1,
+                             month(poll_date) %in% 4:6 ~ 2,
+                             month(poll_date) %in% 7:9 ~ 3,
+                             month(poll_date) %in% 10:12 ~ 4,)) %>% 
+  group_by(year, quarter, candidate_name, party) %>% 
+  summarize(avg_support = mean(avg_support)) %>% 
+  ungroup() %>% 
+  left_join(econ, by = c("year", "quarter")) %>% 
+  left_join(popvote, by = c("year", "party")) %>% 
+  select(-candidate, -(inflation:stock_volume))
+
+mlk_r <- mlk %>% 
+  filter(incumbent_party == TRUE, year != 2020, quarter == 2)
+
+lm_polls_econ <- lm(pv2p ~ avg_support + GDP_growth_qt, data = mlk_r)
+summary(lm_polls_econ)
+
+# low: 41.08826, Q2: 43.02516, Q3: 42.30202, Avg Q2+Q3: 46.30655
+gdp_new <- data.frame(avg_support = 43.02516,
+                      GDP_growth_qt = -0.7424405)
+
+predict(lm_polls_econ, gdp_new, interval = "prediction")
 
 
 
