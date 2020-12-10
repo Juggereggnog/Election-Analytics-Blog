@@ -44,7 +44,7 @@ pollavg <- read_csv("data/eval/pollavg_1948-2020.csv")
 pollstate <- read_csv("data/final/pollavg_bystate_1968-2016.csv")
 
 
-# Making (relevant) polls_2020 dataframe (polls 5 weeks out)
+# Making (relevant) polls_2020 dataframe (polls 2 days out)
 pollstate_2020 <- data.frame(ID = 1:100)
 pollstate_2020$state <- state.name
 pollstate_2020 <- pollstate_2020 %>% 
