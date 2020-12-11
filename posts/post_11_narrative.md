@@ -7,14 +7,6 @@
 ## COVID Containment & Economic Recovery
 
 
-1. Exit Polls show primary economic concern (mitigated by partisan-filtered perception of 
-econ) (correlation between economic concern surveys & popvote & policy views of Trump / 
-Biden)
-
-2. Partial Economic recovery (Q1 & Q3 support "V" shaped recovery theory, mitigated by 
-merits of alternative "K" shaped recovery theory (not a *full*, many still hurting))
-
-
 Fundamentals and polls alike got a lot of flack this election cycle. With COVID-19
 and economic lockdowns in many parts of the country, forecasters who relied on
 Q2 GDP growth for their models were met with an unprecedented 8% *drop*, leading
@@ -29,7 +21,7 @@ I think two main questions arose after Election Day:
 1. **Why did Trump outperform the polls?**
 2. **Could fundamentals still have had predictive power this election?**
 
-One media narrative proposes a partial answer to both: [Fears about the economy under COVID-19 lockdowns helped Trump outperform polls](https://www.theguardian.com/world/2020/nov/04/exit-polls-economy-covid-lockdown-trump). This narrative proposes that voters had become discontented with an intense,
+One media narrative can partially answer both: [Fears about the economy under COVID-19 lockdowns helped Trump outperform polls](https://www.theguardian.com/world/2020/nov/04/exit-polls-economy-covid-lockdown-trump). This narrative proposes that voters had become discontented with an intense,
 exhaustive pandemic response, and saw Biden as supporting its continuation and
 Trump supporting its cessation. This dichotomy between rebuilding the economy
 and curbing coronavirus spread, combined with partial economic recovery in the
@@ -58,7 +50,22 @@ a polls-only model.
 ![Polls-N-Pandemics](../figures/narrative/polls_n_pandemics.png)
 
 
-The
+We have what visually appears to be a negative correlation: high support in late
+February before the brunt of the pandemic, a large spike around early July at the
+peak of the pandemic corresponds to Trump's lowest support, which steadily increases
+as cases go down before October. However, two points counter this pattern. Firstly,
+every correlation I ran between these two datasets yielded no less than -0.12, which
+suggests a weak correlation between new cases and polling support. Secondly, the
+pattern only holds until October, when a sudden drop and rise in support is only
+met with more and more cases. Overall, this visual pattern suggests less than a
+preference for Trump than an attribution of a worsening pandemic *to* Trump. Voters
+like him more when case go down and vice versa.
+
+That said, it may be that the pattern breaks after the start of the general
+election because Trump ran on rebuilding the economy and getting people back to
+work, and asserted that Biden was for putting people through another economic
+lockdown.
+
 
 
 
@@ -89,7 +96,11 @@ F-statistic: 18.77 on 2 and 10 DF,  p-value: 0.0004115
 ```
 
 
-The
+Rather than use simply Q2 or Q3 GDP growth, which taken separately suggest wild
+margins for Trump, I took the average of the two growth rates, and found that
+it fit the final two-party vote share within 0.01% (fit: 47.715%). I believe this
+supports the narrative of the economy helping Trump outperform the polls on Election
+Day.
 
 
 
