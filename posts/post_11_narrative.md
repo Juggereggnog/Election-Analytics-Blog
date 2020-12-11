@@ -49,9 +49,44 @@ including it in a polling regression should increase its accuracy relative to
 a polls-only model.
 
 
+
+## Testable Implication 1: Trump Support & COVID
+
+
 ### Average Poll Support and Daily New Cases Over Time
 
 ![Polls-N-Pandemics](../figures/narrative/polls_n_pandemics.png)
+
+
+The
+
+
+
+## Testable Implication 2: Accounting for Q3 Economic Recovery
+
+
+### Multivariable Regression: Average Poll Support & Q2 GDP Growth
+
+```r
+Call:
+lm(formula = pv2p ~ avg_support + GDP_growth_qt, data = mlk)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-4.6234 -0.7780  0.1082  0.6658  3.2407 
+
+Coefficients:
+              Estimate Std. Error t value Pr(>|t|)   
+(Intercept)    23.6527     6.1685   3.834  0.00329 **
+avg_support     0.5873     0.1428   4.114  0.00210 **
+GDP_growth_qt   1.6237     0.7312   2.221  0.05064 . 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 2.474 on 10 degrees of freedom
+Multiple R-squared:  0.7897,	Adjusted R-squared:  0.7476 
+F-statistic: 18.77 on 2 and 10 DF,  p-value: 0.0004115
+```
 
 
 The
