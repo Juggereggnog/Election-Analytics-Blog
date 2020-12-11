@@ -37,37 +37,6 @@ pollavg <- read_csv("data/narrative/pollavg_1948-2020.csv")
 
 pollstate <- read_csv("data/narrative/pollavg_bystate_1968-2016.csv")
 
-
-# Making (relevant) polls_2020 dataframe (polls 2 days out)
-pollstate_2020 <- data.frame(ID = 1:100)
-pollstate_2020$state <- state.name
-pollstate_2020 <- pollstate_2020 %>% 
-  arrange(state) %>% 
-  select(-ID)
-pollstate_2020$party <- c("democrat", "republican")
-## Manually coded in FiveThirtyEight state poll avgs alphabetically (two per state)
-pollstate_2020$avg_poll <- c(38.2, 57.0, 43.4, 51.0, 48.7, 45.3, 35.9, 59.1,
-                             61.4, 33.4, 54.6, 40.6, 57.4, 32.5, 58.7, 34.9,
-                             48.5, 46.6, 48.4, 46.8, 63.6, 30.7, 37.7, 57.5,
-                             55.0, 40.9, 41.8, 51.1, 45.6, 47.3, 41.7, 51.7,
-                             39.5, 55.6, 37.0, 57.4, 53.5, 39.9, 61.6, 31.9,
-                             65.9, 29.2, 51.2, 42.8, 51.2, 42.3, 39.2, 55.6,
-                             44.2, 50.9, 45.3, 50.2, 42.4, 52.4, 49.5, 44.4,
-                             53.8, 42.8, 59.6, 37.2, 53.7, 42.2, 62.8, 32.1,
-                             49.0, 46.7, 38.1, 56.6, 46.9, 47.1, 36.3, 58.9,
-                             57.9, 38.0, 49.9, 45.0, 63.4, 32.3, 43.6, 51.4,
-                             39.2, 53.8, 41.3, 54.4, 47.0, 48.4, 41.6, 52.2,
-                             65.6, 28.7, 53.2, 41.9, 58.5, 35.5, 34.0, 61.3,
-                             51.9, 43.7, 30.5, 62.6)
-
-pollstate_2020 <- pollstate_2020 %>% 
-  pivot_wider(names_from = party, values_from = avg_poll) %>% 
-  mutate(win_margin = democrat - republican,
-         # Alternate reality where Trump had 2.5% uniform swing in poll averages
-         shift_d = democrat - 2.5,
-         shift_r = republican + 2.5)
-
-
 vep <- read_csv("data/narrative/vep_1980-2016.csv") %>% 
   arrange(year)
 
@@ -116,6 +85,36 @@ poll_pvstate_vep <- pvstate %>%
   inner_join(vep)
 
 
+# Making (relevant) polls_2020 dataframe (polls 2 days out)
+pollstate_2020 <- data.frame(ID = 1:100)
+pollstate_2020$state <- state.name
+pollstate_2020 <- pollstate_2020 %>% 
+  arrange(state) %>% 
+  select(-ID)
+pollstate_2020$party <- c("democrat", "republican")
+## Manually coded in FiveThirtyEight state poll avgs alphabetically (two per state)
+pollstate_2020$avg_poll <- c(38.2, 57.0, 43.4, 51.0, 48.7, 45.3, 35.9, 59.1,
+                             61.4, 33.4, 54.6, 40.6, 57.4, 32.5, 58.7, 34.9,
+                             48.5, 46.6, 48.4, 46.8, 63.6, 30.7, 37.7, 57.5,
+                             55.0, 40.9, 41.8, 51.1, 45.6, 47.3, 41.7, 51.7,
+                             39.5, 55.6, 37.0, 57.4, 53.5, 39.9, 61.6, 31.9,
+                             65.9, 29.2, 51.2, 42.8, 51.2, 42.3, 39.2, 55.6,
+                             44.2, 50.9, 45.3, 50.2, 42.4, 52.4, 49.5, 44.4,
+                             53.8, 42.8, 59.6, 37.2, 53.7, 42.2, 62.8, 32.1,
+                             49.0, 46.7, 38.1, 56.6, 46.9, 47.1, 36.3, 58.9,
+                             57.9, 38.0, 49.9, 45.0, 63.4, 32.3, 43.6, 51.4,
+                             39.2, 53.8, 41.3, 54.4, 47.0, 48.4, 41.6, 52.2,
+                             65.6, 28.7, 53.2, 41.9, 58.5, 35.5, 34.0, 61.3,
+                             51.9, 43.7, 30.5, 62.6)
+
+pollstate_2020 <- pollstate_2020 %>% 
+  pivot_wider(names_from = party, values_from = avg_poll) %>% 
+  mutate(win_margin = democrat - republican,
+         # Alternate reality where Trump had 2.5% uniform swing in poll averages
+         shift_d = democrat - 2.5,
+         shift_r = republican + 2.5)
+
+
 
 ######################### DESCRIPTIVE ANALYSIS #################################
 
@@ -123,7 +122,6 @@ poll_pvstate_vep <- pvstate %>%
 poll_covid <- pollavg %>% 
   filter(year == 2020) %>% 
   inner_join(covid, by = c("poll_date" = "date"))
-
 
 # Biden pv NOT overestimated (+0.005), Trump underestimated (-0.0338)
 p1 <- poll_covid %>% 
@@ -146,9 +144,9 @@ p2 <- poll_covid %>%
   theme_bw()
 
 # Negative Correlation!
-ggarrange(p1, p2, ncol = 1)
+p3 <- ggarrange(p1, p2, ncol = 1)
 
-ggsave("polls_n_pandemics.png", path = "figures/narrative", height = 4, width = 8)
+ggsave("polls_n_pandemics.png", plot = p3, path = "figures/narrative", height = 4, width = 8)
 
 
 # Weak correlations (< 0.12) belie apparent visual inverse relationship
@@ -158,6 +156,7 @@ cor(poll_covid$avg_support[month(poll_covid$poll_date) <= 7], poll_covid$new_cas
 cor(poll_covid$avg_support[month(poll_covid$poll_date) %in% 7:9], poll_covid$new_cases[month(poll_covid$poll_date) %in% 7:9])
 
 
+# Joining polling data with economic data, running new regression
 mlk <- pollavg %>% 
   mutate(quarter = case_when(month(poll_date) %in% 1:3 ~ 1,
                              month(poll_date) %in% 4:6 ~ 2,
@@ -168,15 +167,14 @@ mlk <- pollavg %>%
   ungroup() %>% 
   left_join(econ, by = c("year", "quarter")) %>% 
   left_join(popvote, by = c("year", "party")) %>% 
-  select(-candidate, -(inflation:stock_volume))
-
-mlk_r <- mlk %>% 
+  select(-candidate, -(inflation:stock_volume)) %>% 
   filter(incumbent_party == TRUE, year != 2020, quarter == 2)
 
-lm_polls_econ <- lm(pv2p ~ avg_support + GDP_growth_qt, data = mlk_r)
+lm_polls_econ <- lm(pv2p ~ avg_support + GDP_growth_qt, data = mlk)
 summary(lm_polls_econ)
 
-# low: 41.08826, Q2: 43.02516, Q3: 42.30202, Avg Q2+Q3: 46.30655
+# Poll Support: low: 41.08826, Q2: 43.02516, Q3: 42.30202, Avg Q2+Q3: 46.30655
+# GDP Growth: Avg Q2+Q3: -0.7424405
 gdp_new <- data.frame(avg_support = 43.02516,
                       GDP_growth_qt = -0.7424405)
 
@@ -195,9 +193,6 @@ pollD_sd <- sd(pollstate_2020$democrat) / 100
 
 # Running binomial logit regression for each state
 meow <- lapply(s, function(s){
-  
-  ### hpoll_s_R_2020 <- pollstate_2020$shift_r[pollstate_2020$state == s]
-  ### hpoll_s_D_2020 <- pollstate_2020$shift_d[pollstate_2020$state == s]
   
   VEP_s_2020 <- as.integer(vep$VEP[vep$state == s & vep$year == 2016])
   
@@ -317,25 +312,13 @@ dooby <- dooby %>%
          ev_lost = ifelse(state_win == "win", 0, ev))
 
 
-dooby %>% 
-  ggplot(aes(x = sim_elxns_s_2020, fill = state_win)) +
-  facet_geo(~ state_abb, scales = "free") +
-  geom_histogram(bins = 100) +
-  labs(x = "Democratic Win Margin",
-       y = "Number of Simulations",
-       fill = "Dem Results") +
-  theme_bw()
-
-# ggsave("better_binomial.png", path = "figures/eval", height = 6, width = 10)
-
-
 # Gathering win statistics for each state
 dooby_wins <- dooby %>% 
   group_by(state) %>% 
   count(state_win) %>% 
   pivot_wider(names_from = state_win,
               values_from = n) %>% 
-  mutate(win_prob = win / (win + lose))
+  mutate(win_prob = win / (win + lose) * 100)
 
 
 # Same process as dooby but with the average win margin for each state
@@ -344,8 +327,8 @@ dooby_avgs <- dooby %>%
   summarize(avg_Rvotes = mean(sim_Rvotes_s_2020),
             avg_Dvotes = mean(sim_Dvotes_s_2020)) %>% 
   mutate(avg_total_votes = avg_Rvotes + avg_Dvotes,
-         avg_D_pv2p = avg_Dvotes / avg_total_votes,
-         avg_R_pv2p = avg_Rvotes / avg_total_votes,
+         avg_D_pv2p = avg_Dvotes / avg_total_votes * 100,
+         avg_R_pv2p = avg_Rvotes / avg_total_votes * 100,
          avg_win_margin = avg_D_pv2p - avg_R_pv2p,
          avg_state_win = case_when(avg_win_margin > 0 ~ "win",
                                    avg_win_margin < 0 ~ "lose",
@@ -413,76 +396,15 @@ dooby_avgs <- dooby %>%
          bin_state_win = ifelse(state_win == "win", 1, 0))
 
 
-dooby_avgs %>% 
-  ggplot(aes(state = state, fill = avg_state_win)) +
-  geom_statebins() +
-  theme_statebins() +
-  labs(fill = "Average Dem Result")
-
-# ggsave("avg_elxn.png", path = "figures/eval", height = 6, width = 8)
+### Category Error? (Turnout too low)
+### pred_R_pv2p: 45.57%, pred_D_pv2p: 54.43%
+### actual_R_pv2p: 47.73%, actual_D_pv2p: 52.27%
+sum(dooby_avgs$avg_Rvotes) / sum(dooby_avgs$avg_total_votes) * 100
+sum(dooby_avgs$avg_Dvotes) / sum(dooby_avgs$avg_total_votes) * 100
 
 
-### Category Error: Turnout too low (R: 45.55%, D: 54.45%)
-sum(dooby_avgs$avg_Rvotes)
-sum(dooby_avgs$avg_Dvotes)
-sum(dooby_avgs$avg_total_votes)
-
-### R: 170, D: 365 (+3 from D.C. = 368)
+### pred_R: 188, pred_D: 347 (+3 from D.C. = 350)
+### actual_R: 232, actual_D: 303 (+3 from D.C. = 306)
 sum(dooby_avgs$ev)
 sum(dooby_avgs$ev_won)
 sum(dooby_avgs$ev_lost)
-
-
-
-################################## TESTING #####################################
-
-# Calculating Electoral College votes for each simulated election
-ev_dist <- dooby %>% 
-  group_by(election_id) %>% 
-  summarize(election_result = sum(ev_won),
-            Rvotes = sum(sim_Rvotes_s_2020),
-            Dvotes = sum(sim_Dvotes_s_2020)) %>% 
-  mutate(total_votes = Rvotes + Dvotes,
-         D_pv2p = Dvotes / total_votes,
-         R_pv2p = Rvotes / total_votes)
-
-
-# Plotting distribution of results
-ev_dist %>% 
-  ggplot(aes(x = election_result, fill = (election_result >= 267))) +
-  geom_histogram(bins = 60) +
-  theme_bw() +
-  labs(x = "# Electoral College Votes",
-       y = "# of Elections",
-       fill = "Biden Wins")
-
-# ggsave("election_results.png", path = "figures/eval", height = 4, width = 8)
-
-
-# Counting number of wins and losses (for intuition and proportion) (91.38% win chance)
-ev_dist %>% 
-  count(election_result >= 267)
-
-
-# Plotting actual D_pv2p against predicted D_pv2p
-ggplot(dooby_avgs, aes(x = avg_D_pv2p, y = D_pv2p, label = state_abb)) +
-  geom_text() +
-  geom_abline(slope = 1, intercept = 0) +
-  geom_vline(xintercept = 0.5, linetype = "dashed") +
-  geom_hline(yintercept = 0.5, linetype = "dashed") +
-  geom_smooth(method = "lm") +
-  labs(x = "Predicted Democratic Two-Party Vote Share",
-       y = "Actual Democratic Two-Party Vote Share")
-
-
-# ggsave("act_pred_scatter.png", path = "figures/eval", height = 6, width = 6)
-
-
-brier <- sum((dooby_avgs$win_prob - as.numeric(dooby_avgs$bin_state_win))^2) / 50
-
-rmse <- sqrt(sum((dooby_avgs$avg_D_pv2p - dooby_avgs$D_pv2p)^2) / 50) * 100
-
-dooby_avgs %>% 
-  select(state, win_prob, bin_state_win, avg_D_pv2p, D_pv2p) %>% 
-  mutate(diff = abs(avg_D_pv2p - D_pv2p),
-         diff_brier = abs(win_prob - bin_state_win))
